@@ -2,61 +2,124 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>JS Audiosynth</title>
+	<title>restaurantology</title>
 	<!--<script type="text/javascript" charset="utf-8" src="base64.js"></script>-->
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
-	<script src="http://code.jquery.com/jquery-1.5.min.js"></script>
-	<script src="./raphael.js"></script>
-	<script src="./drive.js"></script>
-	<script src="./tree.js"></script>
-	<script src="./stroke.js"></script>
+	<link rel="stylesheet" href="../jquery-ui-1.8.11.custom/css/ui-lightness/jquery-ui-1.8.11.custom.css" />
+	<script src="../jquery-ui-1.8.11.custom/js/jquery-1.5.1.min.js"></script>
+	<script src="../jquery-ui-1.8.11.custom/js/jquery-ui-1.8.11.custom.min.js"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	<script type="text/javascript" src="../geo-autocomplete/ui.geo_autocomplete.js"></script>
 	<script type="text/javascript" charset="utf-8">
+
+		(function () {
+			$(".formFresh").live('click.formFresh', function () {
+				var input = $(this);
+				input.val("");
+				input.removeClass("formFresh");
+				input.die('.formFresh');
+			})
+		})();
 	
 		$(document).bind("mobileinit", function(){
 		  	//apply overrides here
 		});
 		
 		$(document).ready(function () {
-			var paper = Raphael(20, 150, 600, 300);
-			//var path = paper.path("M10 10L90 90.7L10 90");
-			//circle.attr("fill", "#f00");
+			var convertHunchResults = function (list) {
+				return $.map(list, function (e, i) {
+					return {
+						label: e.name,
+						value: e.name + " " + e.result_id
+					};
+				});
+			},
+			minLat = 0,
+			minLng = 0,
+			maxLat = 0,
+			maxLng = 0,
+			location,
+			center;
+
+			$('#location').geo_autocomplete({
+				maptype: 'roadmap',
+				select: function(_event, _ui) {
+					// console.log(_ui.item.viewport);
+					// console.log(_ui.item.viewport.getCenter());
+					// console.log(_ui.item.label);
+					$("#location").val(_ui.item.label);
+					if (_ui.item.viewport) {
+						//map.fitBounds(_ui.item.viewport);
+						location = _ui.item.label;
+						center = _ui.item.viewport.getCenter();
+						maxLat = _ui.item.viewport.getNorthEast().lat();
+						maxLng = _ui.item.viewport.getNorthEast().lng();
+						minLat = _ui.item.viewport.getSouthWest().lat();
+						minLng = _ui.item.viewport.getSouthWest().lng();
+					}
+				}
+			});
+
 			
-			var t = tree(10);
-			var x = 0, y = 0;
-			var pathString = "M0 100L"; //m10 10l90 90
-			t.generate();
-			
-			t.eachNode(function (length, angle, branches) {
-				console.log(angle);
-				pathString += x+length+" "+(angle+100)+" ";
-				//paper.ellipse(x+length, angle, 10, 10);
-				x += length;
-				// y *= 0.8 * angle;
-				// if (branches.length > 0)
-				// 	pathString = pathString + "L"+x+" "+y+1+"M"+x+" "+y;
+			$( "#restaurant" ).autocomplete({
+				source: function (string, callback) {
+					//callback([{label: "ok", value: "damn"}]);
+					// console.log("http://api.hunch.com/api/v1/get-results/"+$.param({
+					// 		name: string.term,
+					// 		subword: "t",
+					// 		topic_ids: "list_restaurant",
+					// 		minimal: "t",
+					// 		limit: 10
+					// 	}));
+					$.ajax({
+						url: "http://api.hunch.com/api/v1/get-results/",
+						data: {
+							name: string.term,
+							subword: "t",
+							topic_ids: "list_restaurant",
+							minimal: "t",
+							limit: 10
+						},
+						dataType: 'jsonp',
+						success: function (data) {
+							if (data.total > 0) {
+								callback(convertHunchResults(data.results));
+							}
+							else callback([]);
+						}
+					})
+				}
 			});
 			
-			console.log(pathString);
-			paper.path(pathString);
-			
-			$("body").append(paper);
+			$("#lookup").click(function () {
+				var map = new google.maps.Map(document.getElementById("mapCanvas"), { 
+					mapTypeId: google.maps.MapTypeId.ROADMAP 
+				});
+			});
+
 		});
 	</script>
-	<script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+	<!--<script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>-->
 </head>
 <body>
 
 	<div data-role="page" >
 		<div data-role="header">
-			<h1>jenn - a generative tree and texture creator</h1>
+			<h1>restaurantology - a restaurant rec tool</h1>
 		</div>
 		<div data-role="content">
-			<h2>branching degree:</h2>
 			<div data-role="fieldcontain">
-				<label for="slider">Input slider:</label>
-			 	<input type="range" name="slider" id="slider" value="0" min="1" max="15"  />
+				<div>
+					<label for="slider">Restaurant:</label>
+				 	<input type="text" id="restaurant" value="find a restaurant" class="formFresh" />
+
+					<label for="slider">Location:</label>
+				 	<input type="text" id="location" value="enter a location" class="formFresh" />
+					<button id="lookup">Get Recs</button>
+				</div>
 			</div>
-			<button id="play">Draw</button>
+			<br/>
+			<div id="mapCanvas" style="display: none;width:400px;height:300px;"></div>
 		</div>
 		<!--
 		<div data-role="footer">
