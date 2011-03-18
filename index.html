@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>JS Audiosynth</title>
+	<!--<script type="text/javascript" charset="utf-8" src="base64.js"></script>-->
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
+	<script src="http://code.jquery.com/jquery-1.5.min.js"></script>
+	<script src="./raphael.js"></script>
+	<script src="./drive.js"></script>
+	<script src="./tree.js"></script>
+	<script src="./stroke.js"></script>
+	<script type="text/javascript" charset="utf-8">
+	
+		$(document).bind("mobileinit", function(){
+		  	//apply overrides here
+		});
+		
+		$(document).ready(function () {
+			var paper = Raphael(20, 150, 600, 300);
+			//var path = paper.path("M10 10L90 90.7L10 90");
+			//circle.attr("fill", "#f00");
+			
+			var t = tree(10);
+			var x = 0, y = 0;
+			var pathString = "M0 100L"; //m10 10l90 90
+			t.generate();
+			
+			t.eachNode(function (length, angle, branches) {
+				console.log(angle);
+				pathString += x+length+" "+(angle+100)+" ";
+				//paper.ellipse(x+length, angle, 10, 10);
+				x += length;
+				// y *= 0.8 * angle;
+				// if (branches.length > 0)
+				// 	pathString = pathString + "L"+x+" "+y+1+"M"+x+" "+y;
+			});
+			
+			console.log(pathString);
+			paper.path(pathString);
+			
+			$("body").append(paper);
+		});
+	</script>
+	<script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>
+</head>
+<body>
+
+	<div data-role="page" >
+		<div data-role="header">
+			<h1>jenn - a generative tree and texture creator</h1>
+		</div>
+		<div data-role="content">
+			<h2>branching degree:</h2>
+			<div data-role="fieldcontain">
+				<label for="slider">Input slider:</label>
+			 	<input type="range" name="slider" id="slider" value="0" min="1" max="15"  />
+			</div>
+			<button id="play">Draw</button>
+		</div>
+		<!--
+		<div data-role="footer">
+		</div>
+		-->
+	</div>
+
+</body>
+</html>
