@@ -15,6 +15,10 @@
 			min-width: 1020px;
 		}
 		
+		a {
+			color: #b28;
+		}
+		
 		h1 {
 			font-size: 44px;
 			line-height: 5px;
@@ -37,6 +41,27 @@
 			-webkit-border-radius: 10px;
 			border: 1px solid #ddd;
 			color: #222;
+			position: relative;
+		}
+		
+		#controls #advancedButton {
+			border: 10px solid #888;
+			border-right-width: 0px;
+			border-top: 8px solid transparent;
+			border-bottom: 8px solid transparent;
+			display: inline-block;
+			position: absolute;
+			right: 20px;
+			top: 20px;
+			cursor: pointer;
+		}
+		
+		#controls #advancedButton.expanded {
+			-moz-transform: rotate(90deg);
+		}
+		
+		#controls #advancedButton:hover {
+			border-left-color: #666;
 		}
 		
 		#controls strong {
@@ -48,7 +73,8 @@
 		#controls input {
 			margin: 3px 15px;
 			min-width: 200px;
-			padding: 5px;
+			padding: 8px;
+			border: 1px solid #ccc;
 		}
 		
 		#controls #restaurant.loading {
@@ -72,6 +98,7 @@
 			width: 54%;
 			float: right;
 			max-height: 400px;
+			position: relative;
 		}
 		
 		#resultsList > li {
@@ -83,10 +110,40 @@
 		#resultsList > li:hover {
 			border: 1px solid #ddd;
 			background-color: #fafafa;
-		}		
+		}	
 		
-		#resultsList > li + li {
-			border-top: 1px solid #ddd;
+		#header {
+			position: relative;
+		}
+		
+		#header #info {
+			position: absolute;
+			right: 5px;
+			top: 5px;
+			text-align: right;
+		}	
+		
+		#header #info div {
+			font-size: 60%;
+			color: #ccc;
+		}
+		
+		#header #info #powered {
+
+		}
+		
+		#header #info #powered span {
+			font-weight: bolder;
+			color: #a11;
+		}
+		
+		#header img {
+			vertical-align: text-bottom;
+		}
+		
+		#headerText {
+			margin-left: 5px;
+			display: inline-block;
 		}
 		
 		#loadingResults {
@@ -94,6 +151,18 @@
 			text-align: center;
 			background-color: #eee;
 			padding: 20px;
+		}
+		
+		#advancedControls {
+			font-size: 80%;
+		}
+		
+		#showAll {
+			cursor: pointer;
+		}
+		
+		#advancedControls.hidden {
+			display: none;
 		}
 		
 		.resultCity {
@@ -121,6 +190,9 @@
 			padding: 3px;
 			border: 1px solid #eee;
 			vertical-align: top;
+			background-image: url(noimg.png);
+			background-position: center;
+			background-repeat: no-repeat;
 		}
 		
 		.resultItem .dummyImg {
@@ -137,7 +209,7 @@
 			padding-left: 10px;
 		}
 		
-		.resultItem .tags li {
+		#tagControls li, .resultItem .tags li {
 			display: inline-block;
 			padding: 3px 9px 3px 7px;
 			font-size: 70%;
@@ -150,8 +222,17 @@
 			-webkit-border-radius: 10px;
 		}
 		
-		.resultItem .tags li:hover {
+		#tagControls li, .resultItem .tags li:hover {
 			background-color: #eee;
+		}
+		
+		#tagControls li {
+			background-color: white;
+			cursor: pointer;
+		}
+		
+		#tagControls li.hidden {
+			opacity: 0.3;
 		}
 		
 		.formFresh {
@@ -196,9 +277,36 @@
 				}
 			},
 			enable = function () {
-				console.log(resultId, location);
+				//console.log(resultId, location);
 				if (typeof resultId != "undefined" && typeof location != "undefined") {
 					$("#lookup").removeAttr("disabled");
+				}
+			},
+			toggleTag = function (string) {
+				$.each(allRefs, function (i,e) {
+					e.marker.setVisible(false);
+					e.li.hide();
+				});
+				$.each(tagRefs[string], function (i,e) {
+					e.marker.getVisible() ? e.marker.setVisible(false) : e.marker.setVisible(true);
+					e.li.toggle();
+				});
+			},
+			storeTag = function (string, li, marker) {
+				var obj = {li: li, marker: marker};
+				allRefs.push(obj);
+				if (tagRefs[string]) 
+					tagRefs[string].push(obj) 
+				else {
+					var li = $("<li class='hidden' style='border-color:"+colorHash(string)+"'>"+string+"</li>");
+					li.click(function () {
+						li.toggleClass("hidden");
+						li.siblings().addClass("hidden");
+						toggleTag(string);
+					});
+					
+					tagRefs[string] = [obj];
+					$("#tagControls").append(li);
 				}
 			},
 			drawRecResult = function (item, marker) {
@@ -218,6 +326,10 @@
 					marker.setVisible(true);
 				});
 				
+				google.maps.event.addListener(marker, 'click', function () { 
+					$("#resultsList").animate({scrollTop: li.position().top}, 1000);
+				});
+				
 				li.append(title).append("<span>&raquo;</span>").append(link).append(p);
 				
 				title.text(item.name);
@@ -234,6 +346,7 @@
 				
 				$.each(item.tags, function (i,e) {
 					tags.append("<li style='border-color:"+colorHash(e)+"'>"+e+"</li>");
+					storeTag(e, li, marker);
 				});
 				
 				return li;
@@ -273,8 +386,13 @@
 						maxlng: maxLng,
 						minimal: 'f',
 						limit: 10
-					},
-					results = $("#resultsList").not("#loadingResults").empty().scrollTop(0);
+					};
+					
+				$("#resultsList > li").not("#loadingResults").remove();
+				$("#tagControls").empty();
+				tagRefs = {};
+				allRefs = [];
+				$("#resultsList").scrollTop(0);
 				
 				//console.log(cuisine);
 				if (cuisine && cuisine != "") params["tags"] = cuisine;
@@ -289,7 +407,7 @@
 					data: params,
 					dataType: 'jsonp',
 					success: function (data) {
-						$("loadingResults").hide();
+						$("#loadingResults").hide();
 						var list = $("#resultsList");
 						if (data.total > 0) {
 							$.each(data.results, function (i,e) {
@@ -298,7 +416,9 @@
 									marker = new google.maps.Marker({
 										map: map,
 										title: e.name,
-										position: pos
+										position: pos,
+										icon: markerImage,
+										shadow: markerShadow
 									});
 									
 								markers.push(marker);
@@ -328,7 +448,26 @@
 			cuisine,
 			viewport,
 			location,
-			center;
+			center,
+		    markerImage = new google.maps.MarkerImage("marker.png",
+		        new google.maps.Size(24.0, 29.0),
+		        new google.maps.Point(0, 0),
+		        new google.maps.Point(12.0, 14.0)
+		    ),
+		    markerShadow = new google.maps.MarkerImage("shadow.png",
+		        new google.maps.Size(39.0, 29.0),
+		        new google.maps.Point(0, 0),
+		        new google.maps.Point(12.0, 14.0)
+		    ),
+			allRefs = [],
+			tagRefs = {};
+
+					
+			$("#advancedButton").click(function () {
+				var button = $(this);
+				button.toggleClass("expanded");
+				$("#advancedControls").slideToggle();
+			});	
 						
 			$('#location').geo_autocomplete({
 				maptype: 'roadmap',
@@ -422,9 +561,16 @@
 <body>
 
 	<div data-role="page" >
-		<div data-role="header">
-			<h1>restaurantology</h1>
-			<h2>a restaurant recommendation tool</h2>
+		<div data-role="header" id="header">
+			<img src="logo.png" width="60" height="60"/>
+			<div id="headerText">
+				<h1>restaurantology</h1>
+				<h2>a restaurant recommendation tool</h2>
+			</div>
+			<div id="info">
+				<div id="powered">powered by the <span>hunch</span> api</div>
+				<div id="hacked">guru'd by <a href="http://www.twitter.com/matthandlersux" target="_new">@matthandlersux</a></div>
+			</div>
 		</div>
 		<div data-role="content">
 			<div id="controls">
@@ -437,6 +583,11 @@
 					<label for="slider">but I <strong>live</strong> in:</label>
 				 	<input type="text" id="location" value="city name..." class="formFresh" />
 					<button id="lookup" disabled>Get Recs</button>
+				</div>
+				<div id="advancedButton"></div>
+				<div id="advancedControls" class="hidden">
+					<a id="showAll">Show All</a> or <label>Show Only:</label>
+					<ul id="tagControls"></ul>
 				</div>
 			</div>
 			<div id="mapContainer">
