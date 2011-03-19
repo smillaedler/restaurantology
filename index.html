@@ -24,7 +24,7 @@
 		}
 		
 		h2 {
-			font-size: 24px;
+			font-size: 18px;
 			font-weight: lighter;
 			color: #444;
 		}
@@ -75,9 +75,15 @@
 		}
 		
 		#resultsList > li {
-			padding: 10px 3px;
+			padding: 10px;
 			margin-bottom: 10px;
+			border: 1px solid transparent;
 		}
+		
+		#resultsList > li:hover {
+			border: 1px solid #ddd;
+			background-color: #fafafa;
+		}		
 		
 		#resultsList > li + li {
 			border-top: 1px solid #ddd;
@@ -127,6 +133,8 @@
 		.linkToSite {
 			font-size: 70%;
 			color: #666;
+			display: inline-block;
+			padding-left: 10px;
 		}
 		
 		.resultItem .tags li {
@@ -137,7 +145,7 @@
 			color: #444;
 			margin: 3px;
 			border: 0px solid black;
-			border-left-width: 23px;
+			border-left-width: 21px;
 			-moz-border-radius: 10px;
 			-webkit-border-radius: 10px;
 		}
@@ -187,6 +195,12 @@
 					marker.getVisible() ? marker.setVisible(false) : marker.setVisible(true);
 				}
 			},
+			enable = function () {
+				console.log(resultId, location);
+				if (typeof resultId != "undefined" && typeof location != "undefined") {
+					$("#lookup").removeAttr("disabled");
+				}
+			},
 			drawRecResult = function (item, marker) {
 				var title = $("<strong/>"),
 					p = $("<div class='resultContent'/>"),
@@ -204,7 +218,7 @@
 					marker.setVisible(true);
 				});
 				
-				li.append(title).append(link).append(p);
+				li.append(title).append("<span>&raquo;</span>").append(link).append(p);
 				
 				title.text(item.name);
 				link.attr("href", item.url).text(item.url);
@@ -332,6 +346,7 @@
 						minLat = _ui.item.viewport.getSouthWest().lat();
 						minLng = _ui.item.viewport.getSouthWest().lng();
 					}
+					enable();
 				}
 			});
 
@@ -343,6 +358,7 @@
 				select: function (event, ui) {
 					resultId = ui.item.resultId;
 					if (ui.item.cuisines) cuisine = ui.item.cuisines[0];
+					enable();
 				},
 				source: function (string, callback) {
 					//callback([{label: "ok", value: "damn"}]);
@@ -418,9 +434,9 @@
 					<label for="slider">I am <strong>homesick</strong> for:</label>
 				 	<input type="text" id="restaurant" value="restaurant name..." class="formFresh" />
 
-					<label for="slider">and now I <strong>live</strong> in:</label>
+					<label for="slider">but I <strong>live</strong> in:</label>
 				 	<input type="text" id="location" value="city name..." class="formFresh" />
-					<button id="lookup">Get Recs</button>
+					<button id="lookup" disabled>Get Recs</button>
 				</div>
 			</div>
 			<div id="mapContainer">
