@@ -64,6 +64,7 @@
 		}
 		
 		#resultsList {
+			display: none;
 			padding: 0px 20px;
 			list-style-type: none;
 			margin-top: 0px;
@@ -130,10 +131,19 @@
 		
 		.resultItem .tags li {
 			display: inline-block;
-			padding: 3px;
+			padding: 3px 9px 3px 7px;
+			font-size: 70%;
 			background-color: #ddd;
 			color: #444;
 			margin: 3px;
+			border: 0px solid black;
+			border-left-width: 23px;
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 10px;
+		}
+		
+		.resultItem .tags li:hover {
+			background-color: #eee;
 		}
 		
 		.formFresh {
@@ -187,6 +197,7 @@
 					interval;
 					
 				li.hover(function () {
+					blinkMarker(marker)();
 					interval = setInterval(blinkMarker(marker), 800);
 				}, function () {
 					clearInterval(interval);
@@ -208,10 +219,35 @@
 				p.append(tags);
 				
 				$.each(item.tags, function (i,e) {
-					tags.append("<li>"+e+"</li>");
+					tags.append("<li style='border-color:"+colorHash(e)+"'>"+e+"</li>");
 				});
 				
 				return li;
+			},
+			colorHash = function (string) {
+				string = string.replace(/[^a-z]/ig, '');
+				var letters = {},
+					r = g = b = total = 0;
+				
+				$.each("abcdefghijklmnopqrstuvwxyz".split(""), function (i,e) {
+					letters[e] = i % 3;
+				})
+				
+				$.each(string.split(""), function (i,e) {
+					switch (letters[e]) {
+						case 0: 
+							r++;
+							break;
+						case 1:
+							g++;
+							break;
+						default:
+							b++;
+							break;
+					}
+					total++;
+				});
+				return "rgb("+(parseInt(r/total*255))+","+(parseInt(g/total*255))+","+(parseInt(b/total*255))+")";
 			},
 			pingHunch = function () {
 				var params = {
@@ -224,7 +260,7 @@
 						minimal: 'f',
 						limit: 10
 					},
-					results = $("#resultsList").not("#loadingResults").empty();
+					results = $("#resultsList").not("#loadingResults").empty().scrollTop(0);
 				
 				//console.log(cuisine);
 				if (cuisine && cuisine != "") params["tags"] = cuisine;
@@ -261,6 +297,9 @@
 							}
 							map.fitBounds( latlngbounds );
 						}
+						else {
+							alert("sorry, no results for that location");
+						}
 					}
 				});	
 			},
@@ -276,7 +315,7 @@
 			viewport,
 			location,
 			center;
-
+						
 			$('#location').geo_autocomplete({
 				maptype: 'roadmap',
 				select: function(_event, _ui) {
@@ -352,7 +391,10 @@
 						zoom: 12,
 						mapTypeControl: true
 					});
-					google.maps.event.addListenerOnce(map, 'tilesloaded', pingHunch);
+					google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
+						$("#resultsList").show();
+						pingHunch();
+					});
 				}
 				else pingHunch();
 			});
@@ -371,6 +413,8 @@
 		<div data-role="content">
 			<div id="controls">
 				<div data-role="fieldcontain">
+					<!-- i wish i could eat at ___ but i live in ___ -->
+					<!-- i am looking for a place like ___ in ___ -->
 					<label for="slider">I am <strong>homesick</strong> for:</label>
 				 	<input type="text" id="restaurant" value="restaurant name..." class="formFresh" />
 
