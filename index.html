@@ -581,6 +581,9 @@
 					}
 					enable();
 				}
+			})
+			.blur(function () {
+				$(this).removeClass("loading");
 			});
 
 			
@@ -629,23 +632,47 @@
 			});
 			
 			$("#lookup").click(function () {
-				$("#loadingResults").show();
-				//$("#mapCanvas").show();
-				//var bounds;
+				var lookup = function () {
+					$("#loadingResults").show();
+					//$("#mapCanvas").show();
+					//var bounds;
 				
-				if (!map) {
-					map = new google.maps.Map(document.getElementById("mapCanvas"), { 
-						mapTypeId: google.maps.MapTypeId.ROADMAP,
-						center: center,
-						zoom: 12,
-						mapTypeControl: true
-					});
-					google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
-						$("#resultsList").show();
-						pingHunch();
-					});
+					if (!map) {
+						map = new google.maps.Map(document.getElementById("mapCanvas"), { 
+							mapTypeId: google.maps.MapTypeId.ROADMAP,
+							center: center,
+							zoom: 12,
+							mapTypeControl: true
+						});
+						google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
+							$("#resultsList").show();
+							pingHunch();
+						});
+					}
+					else pingHunch();
 				}
-				else pingHunch();
+				
+				if (!location) {
+					var locationInput = $("#location");
+					geocoder.geocode( { 'address': locationInput.val()}, function (results, status) {
+						if (status == google.maps.GeocoderStatus.OK) {
+							locationInput.val(results[0].formatted_address);
+							location = results[0].formatted_address;
+							viewport = results[0].geometry.viewport;
+							center = results[0].geometry.viewport.getCenter();
+							maxLat = results[0].geometry.viewport.getNorthEast().lat();
+							maxLng = results[0].geometry.viewport.getNorthEast().lng();
+							minLat = results[0].geometry.viewport.getSouthWest().lat();
+							minLng = results[0].geometry.viewport.getSouthWest().lng();
+						
+							lookup();
+						}
+						else
+							alert("sorry, you must enter a location that google maps recognizes.");
+					});
+
+				}
+				else lookup();
 			});
 
 		});
