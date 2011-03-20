@@ -17,6 +17,11 @@
 		
 		a {
 			color: #b28;
+			text-decoration: none;
+		}
+		
+		a:hover {
+			text-decoration: underline;
 		}
 		
 		h1 {
@@ -44,11 +49,32 @@
 			position: relative;
 		}
 		
+		#lookup {
+			-moz-box-shadow: 0 1px 0 #C2C1F7;
+			background-color: #59A9D5;
+			border-color: #2767AB;
+			border-right: 1px solid #2767AB;
+			border-style: groove solid solid;
+			border-width: 2px 1px 1px;
+			color: white;
+			font-size: 13px;
+			font-weight: bolder;
+			padding: 4px 10px 7px;
+		}
+		
+		#lookup:hover {
+			background-color: #50A0D5;
+		}
+		
+		#lookup:disabled {
+			opacity: 0.3;
+		}
+		
 		#controls #advancedButton {
 			border: 10px solid #888;
-			border-right-width: 0px;
-			border-top: 8px solid transparent;
-			border-bottom: 8px solid transparent;
+			border-bottom-width: 0px;
+			border-left: 8px solid transparent;
+			border-right: 8px solid transparent;
 			display: inline-block;
 			position: absolute;
 			right: 20px;
@@ -57,11 +83,13 @@
 		}
 		
 		#controls #advancedButton.expanded {
-			-moz-transform: rotate(90deg);
+			/*-moz-transform: rotate(90deg);*/
+			border-top-width: 0px;
+			border-bottom-width: 10px;
 		}
 		
 		#controls #advancedButton:hover {
-			border-left-color: #666;
+			border-top-color: #666;
 		}
 		
 		#controls strong {
@@ -77,7 +105,7 @@
 			border: 1px solid #ccc;
 		}
 		
-		#controls #restaurant.loading {
+		#controls input.loading {
 			background-image: url(loading.round.gif);
 			background-repeat: no-repeat;
 			background-position: right center;
@@ -111,6 +139,18 @@
 			border: 1px solid #ddd;
 			background-color: #fafafa;
 		}	
+		
+		#resultsList > li:hover .resultPrice {
+			display: inline-block;
+		}
+		
+		.resultPrice {
+			color: #2a1;
+			font-size: 50%;
+			vertical-align: middle;
+			padding: 0px 5px;
+			display: none;
+		}
 		
 		#header {
 			position: relative;
@@ -173,6 +213,7 @@
 		.resultItem strong {
 			display: block;
 			font-size: 150%;
+			margin-bottom: 5px;
 		}
 		
 		.resultItem .resultContent {
@@ -195,6 +236,12 @@
 			background-repeat: no-repeat;
 		}
 		
+		.resultAddress {
+			font-size: 80%;
+			font-style: italic;
+			color: #666;
+		}
+		
 		.resultItem .dummyImg {
 			display: inline-block;
 			background-color: #f5f5f5;
@@ -204,7 +251,6 @@
 		
 		.linkToSite {
 			font-size: 70%;
-			color: #666;
 			display: inline-block;
 			padding-left: 10px;
 		}
@@ -232,7 +278,11 @@
 		}
 		
 		#tagControls li.hidden {
-			opacity: 0.3;
+			opacity: 0.6;
+		}
+		
+		#tagControls li:hover {
+			opacity: 0.9;
 		}
 		
 		.formFresh {
@@ -299,11 +349,6 @@
 					tagRefs[string].push(obj) 
 				else {
 					var li = $("<li class='hidden' style='border-color:"+colorHash(string)+"'>"+string+"</li>");
-					li.click(function () {
-						li.toggleClass("hidden");
-						li.siblings().addClass("hidden");
-						toggleTag(string);
-					});
 					
 					tagRefs[string] = [obj];
 					$("#tagControls").append(li);
@@ -312,12 +357,14 @@
 			drawRecResult = function (item, marker) {
 				var title = $("<strong/>"),
 					p = $("<div class='resultContent'/>"),
+					address = $("<div class='resultAddress'/>"),
+					price = $("<div class='resultPrice'/>"),
 					link = $("<a class='linkToSite'/>"),
 					img = $("<img width='100'/>"),
 					li = $("<li class='resultItem'>"),
 					tags = $("<ul class='tags'/>"),
 					interval;
-					
+
 				li.hover(function () {
 					blinkMarker(marker)();
 					interval = setInterval(blinkMarker(marker), 800);
@@ -330,9 +377,17 @@
 					$("#resultsList").animate({scrollTop: li.position().top}, 1000);
 				});
 				
-				li.append(title).append("<span>&raquo;</span>").append(link).append(p);
+				li.append(title)
+					.append(address)
+					.append("<span>&raquo;</span>")
+					.append(link)
+					.append(p);
+					
+				if (item.address)
+					address.html(item.address.replace(/\n/g,' ')+(item.phone ? " &middot; " + item.phone : ""));
 				
 				title.text(item.name);
+				if (typeof item.price_range != 'undefined') title.append(price.text($.map(new Array(item.price_range), function () { return "$"; }).join("")));
 				link.attr("href", item.url).text(item.url);
 				
 				if (item.image_urls[0] && item.image_urls[0] != "") { 
@@ -347,6 +402,13 @@
 				$.each(item.tags, function (i,e) {
 					tags.append("<li style='border-color:"+colorHash(e)+"'>"+e+"</li>");
 					storeTag(e, li, marker);
+				});
+				
+				$("#tagControls li").sort(function(a,b) {return $(a).text() > $(b).text();}).each(function (i,e) {
+					var li = $(this),
+						parent = li.parent();
+					li.remove();
+					parent.append(li);
 				});
 				
 				return li;
@@ -462,19 +524,37 @@
 			allRefs = [],
 			tagRefs = {};
 
+			$("#tagControls li").live('click', function () {
+				var li = $(this),
+					string = li.text();
+				li.toggleClass("hidden");
+				li.siblings().addClass("hidden");
+				toggleTag(string);
+			});
 					
 			$("#advancedButton").click(function () {
 				var button = $(this);
 				button.toggleClass("expanded");
 				$("#advancedControls").slideToggle();
 			});	
+			
+			$("#showAll").click(function () {
+				$("#tagControls li").addClass("hidden");
+				
+				$.each(allRefs, function (i,e) {
+					e.marker.setVisible(true);
+					e.li.show();
+				});
+			});
 						
 			$('#location').geo_autocomplete({
+				search: function (event, ui) {
+					$("#location").addClass("loading");
+				},
 				maptype: 'roadmap',
 				select: function(_event, _ui) {
-					// console.log(_ui.item.viewport);
-					//console.log(_ui.item.viewport.getCenter());
 					// console.log(_ui.item.label);
+					$("#location").removeClass("loading");
 					$("#location").val(_ui.item.label);
 					if (_ui.item.viewport) {
 						viewport = _ui.item.viewport;
@@ -569,7 +649,11 @@
 			</div>
 			<div id="info">
 				<div id="powered">powered by the <span>hunch</span> api</div>
-				<div id="hacked">guru'd by <a href="http://www.twitter.com/matthandlersux" target="_new">@matthandlersux</a></div>
+				<div id="hacked">
+					<a href="http://www.twitter.com/matthandlersux" target="_new">@matthandlersux</a>
+					<br/>
+					<a href="http://www.twitter.com/ronfeldman" target="_new">@ronfeldman</a>
+				</div>
 			</div>
 		</div>
 		<div data-role="content">
