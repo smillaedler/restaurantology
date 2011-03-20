@@ -69,6 +69,19 @@
 		#lookup:disabled {
 			opacity: 0.3;
 		}
+				
+		#controls #advancedControlsButton {
+			font-size: 60%;
+			position: absolute;
+			right: 20px;
+			top: 25px;
+			cursor: pointer;
+			display: none;
+		}
+		
+		#controls:hover #advancedControlsButton {
+			display: block;
+		}
 		
 		#controls #advancedButton {
 			border: 10px solid #888;
@@ -76,10 +89,7 @@
 			border-left: 8px solid transparent;
 			border-right: 8px solid transparent;
 			display: inline-block;
-			position: absolute;
-			right: 20px;
-			top: 20px;
-			cursor: pointer;
+			vertical-align: middle;
 		}
 		
 		#controls #advancedButton.expanded {
@@ -122,7 +132,7 @@
 			padding: 0px 20px;
 			list-style-type: none;
 			margin-top: 0px;
-			overflow-y: scroll;
+			overflow-y: auto;
 			width: 54%;
 			float: right;
 			max-height: 400px;
@@ -363,6 +373,7 @@
 					img = $("<img width='100'/>"),
 					li = $("<li class='resultItem'>"),
 					tags = $("<ul class='tags'/>"),
+					anchor = $("<a name='"+item.result_id+"'/>"),
 					interval;
 
 				li.hover(function () {
@@ -374,10 +385,12 @@
 				});
 				
 				google.maps.event.addListener(marker, 'click', function () { 
+					console.log(li.position().top, li.offset().top);
 					$("#resultsList").animate({scrollTop: li.position().top}, 1000);
 				});
 				
-				li.append(title)
+				li.append(anchor)
+					.append(title)
 					.append(address)
 					.append("<span>&raquo;</span>")
 					.append(link)
@@ -399,7 +412,7 @@
 				
 				p.append(tags);
 				
-				$.each(item.tags, function (i,e) {
+				$.each(item.tags.sort(), function (i,e) {
 					tags.append("<li style='border-color:"+colorHash(e)+"'>"+e+"</li>");
 					storeTag(e, li, marker);
 				});
@@ -494,7 +507,7 @@
 							map.fitBounds( latlngbounds );
 						}
 						else {
-							alert("sorry, no results for that location");
+							alert("sorry, no results. try choosing a more general location.");
 						}
 					}
 				});	
@@ -511,6 +524,7 @@
 			viewport,
 			location,
 			center,
+			geocoder = new google.maps.Geocoder(),
 		    markerImage = new google.maps.MarkerImage("marker.png",
 		        new google.maps.Size(24.0, 29.0),
 		        new google.maps.Point(0, 0),
@@ -532,8 +546,8 @@
 				toggleTag(string);
 			});
 					
-			$("#advancedButton").click(function () {
-				var button = $(this);
+			$("#advancedControlsButton").click(function () {
+				var button = $("#advancedButton");
 				button.toggleClass("expanded");
 				$("#advancedControls").slideToggle();
 			});	
@@ -666,9 +680,12 @@
 
 					<label for="slider">but I <strong>live</strong> in:</label>
 				 	<input type="text" id="location" value="city name..." class="formFresh" />
-					<button id="lookup" disabled>Get Recs</button>
+					<button id="lookup" disabled>Discover</button>
 				</div>
-				<div id="advancedButton"></div>
+				<div id="advancedControlsButton">
+					<a>advanced</a> 
+					<div id="advancedButton"></div>
+				</div>
 				<div id="advancedControls" class="hidden">
 					<a id="showAll">Show All</a> or <label>Show Only:</label>
 					<ul id="tagControls"></ul>
