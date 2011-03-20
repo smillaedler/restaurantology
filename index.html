@@ -386,7 +386,7 @@
 				
 				google.maps.event.addListener(marker, 'click', function () { 
 					console.log(li.position().top, li.offset().top);
-					$("#resultsList").animate({scrollTop: li.position().top}, 1000);
+					$("#resultsList").animate({scrollTop: li.position().top + li.parent().scrollTop()}, 1000);
 				});
 				
 				li.append(anchor)
