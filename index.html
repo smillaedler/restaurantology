@@ -388,15 +388,10 @@
 				$(this).fadeOut();
 			});
 		})();
-	
-		$(document).bind("mobileinit", function(){
-		  	//apply overrides here
-		});
 		
 		$(document).ready(function () {
 			var convertHunchResults = function (list) {
 				return $.map(list, function (e, i) {
-					//console.log(e);
 					return {
 						label: e.name + (e.city ? " - " + e.city : ""),
 						value: e.name,
@@ -407,12 +402,10 @@
 			},
 			blinkMarker = function (marker) {
 				return function () {
-					//console.log(marker.getVisible());
 					marker.getVisible() ? marker.setVisible(false) : marker.setVisible(true);
 				}
 			},
 			enable = function () {
-				//console.log(resultId, location);
 				if (typeof resultId != "undefined" && typeof location != "undefined") {
 					$("#lookup").removeAttr("disabled");
 				}
@@ -570,7 +563,6 @@
 						if (data.results.length > 0) {
 							moreButton.show();							
 							$.each(data.results, function (i,e) {
-								//console.log(e);
 								var pos = new google.maps.LatLng(e.lat, e.lng),
 									marker = new google.maps.Marker({
 										map: map,
@@ -661,7 +653,6 @@
 				},
 				maptype: 'roadmap',
 				select: function(_event, _ui) {
-					// console.log(_ui.item.label);
 					$("#location").removeClass("loading");
 					$("#location").val(_ui.item.label);
 					if (_ui.item.viewport) {
@@ -691,14 +682,6 @@
 					enable();
 				},
 				source: function (string, callback) {
-					//callback([{label: "ok", value: "damn"}]);
-					// console.log("http://api.hunch.com/api/v1/get-results/"+$.param({
-					// 		name: string.term,
-					// 		subword: "t",
-					// 		topic_ids: "list_restaurant",
-					// 		minimal: "t",
-					// 		limit: 10
-					// 	}));
 					var finish = function () {
 						$("#restaurant").removeClass("loading");
 					};
@@ -776,7 +759,19 @@
 
 		});
 	</script>
-	<!--<script src="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.js"></script>-->
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-22206497-1']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
 </head>
 <body>
 
