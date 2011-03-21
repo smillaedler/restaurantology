@@ -4,7 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>restaurantology</title>
 	<!--<script type="text/javascript" charset="utf-8" src="base64.js"></script>-->
-	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />
+	<!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />-->
 	<link rel="stylesheet" href="../jquery-ui-1.8.11.custom/css/ui-lightness/jquery-ui-1.8.11.custom.css" />
 	<style>
 		body {
@@ -49,8 +49,12 @@
 			position: relative;
 		}
 		
-		#lookup {
+		#lookup, #moreButton {
+			cursor: pointer;
 			-moz-box-shadow: 0 1px 0 #C2C1F7;
+			-webkit-box-shadow: 0 1px 0 #C2C1F7;
+			-moz-border-radius: 2px;
+			-webkit-border-radius: 2px;
 			background-color: #59A9D5;
 			border-color: #2767AB;
 			border-right: 1px solid #2767AB;
@@ -62,12 +66,19 @@
 			padding: 4px 10px 7px;
 		}
 		
-		#lookup:hover {
+		#lookup:hover, #moreButton:hover {
 			background-color: #50A0D5;
 		}
 		
-		#lookup:disabled {
+		#lookup:disabled, #moreButton.disabled {
 			opacity: 0.3;
+		}
+		
+		#moreButton {
+			width: 130px;
+			text-align: center;
+			display: none;
+			margin: 30px auto;
 		}
 				
 		#controls #advancedControlsButton {
@@ -121,21 +132,25 @@
 			background-position: right center;
 		}
 		
-		#mapContainer, #resultsList {
+		#mapContainer, #resultsListContainer {
 			width: 40%;
 			display: inline-block;
 			vertical-align: top;
 		}
 		
-		#resultsList {
-			display: none;
-			padding: 0px 20px;
-			list-style-type: none;
+		#resultsListContainer {
 			margin-top: 0px;
 			overflow-y: auto;
 			width: 54%;
 			float: right;
+			display: none;
+			padding: 0px 20px;
 			max-height: 400px;
+			position: relative;
+		}
+		
+		#resultsList {
+			list-style-type: none;
 			position: relative;
 		}
 		
@@ -182,7 +197,7 @@
 
 		}
 		
-		#header #info #powered span {
+		.hunch {
 			font-weight: bolder;
 			color: #a11;
 		}
@@ -197,14 +212,27 @@
 		}
 		
 		#loadingResults {
+			background-color: white;
+			background-image: url("loading.round.gif");
+			background-position: right center;
+			background-repeat: no-repeat;
 			display: none;
+			margin: 0 auto;
+			padding: 20px 40px 20px 20px;
+			position: fixed;
+			z-index: 100;
 			text-align: center;
-			background-color: #eee;
-			padding: 20px;
+			-webkit-border-radius: 10px;
+			-moz-border-radius: 10px;
 		}
 		
 		#advancedControls {
 			font-size: 80%;
+			margin: 20px;
+		}
+		
+		#advancedControls label {
+			font-weight: bolder;
 		}
 		
 		#showAll {
@@ -298,6 +326,43 @@
 		.formFresh {
 			color: #aaa;
 		}
+		
+		#overlayBox {
+			background-image: url(bgstatic.png);
+			position: fixed;
+			top: 0px;
+			bottom: 0px;
+			right: 0px;
+			left: 0px;
+			padding: 100px;
+			display: none;
+		}
+		
+		#overlayBox #message {
+			width: 50%;
+			margin: 0px auto;
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 10px;
+			border: 1px solid #1492CC;
+			background-color: white;
+			font-size: 110%;
+			padding: 30px 20px;
+			color: #b40000;
+			text-align: center;
+			-moz-box-shadow: 0px 0px 25px black;
+			-webkit-box-shadow: 0px 0px 25px black;
+		}
+		
+		@media screen and (-webkit-min-device-pixel-ratio:0) {
+			#lookup {
+				border-top-width: 1px;
+				border-style: solid;
+			}
+			
+			#tagControls li, .resultItem .tags li {
+				border-width: 0px;
+			}
+		}
 	</style>
 	<script src="../jquery-ui-1.8.11.custom/js/jquery-1.5.1.min.js"></script>
 	<script src="../jquery-ui-1.8.11.custom/js/jquery-ui-1.8.11.custom.min.js"></script>
@@ -306,12 +371,21 @@
 	<script type="text/javascript" charset="utf-8">
 
 		(function () {
+			window.alert = function (text) {
+				$("#overlayBox").fadeIn();
+				$("#overlayBox #message").text(text);				
+			}
+			
 			$(".formFresh").live('click.formFresh', function () {
 				var input = $(this);
 				input.val("");
 				input.removeClass("formFresh");
 				input.die('.formFresh');
 			})
+			
+			$("#overlayBox").live('click', function () {
+				$(this).fadeOut();
+			});
 		})();
 	
 		$(document).bind("mobileinit", function(){
@@ -377,6 +451,7 @@
 					interval;
 
 				li.hover(function () {
+					clearInterval(interval);
 					blinkMarker(marker)();
 					interval = setInterval(blinkMarker(marker), 800);
 				}, function () {
@@ -385,8 +460,7 @@
 				});
 				
 				google.maps.event.addListener(marker, 'click', function () { 
-					console.log(li.position().top, li.offset().top);
-					$("#resultsList").animate({scrollTop: li.position().top + li.parent().scrollTop()}, 1000);
+					$("#resultsListContainer").animate({scrollTop: li.position().top + li.parent().scrollTop()}, 1000);
 				});
 				
 				li.append(anchor)
@@ -451,7 +525,7 @@
 				});
 				return "rgb("+(parseInt(r/total*255))+","+(parseInt(g/total*255))+","+(parseInt(b/total*255))+")";
 			},
-			pingHunch = function () {
+			pingHunch = function (more) {
 				var params = {
 						result_id: resultId,
 						topic_ids: "list_restaurant",
@@ -461,30 +535,39 @@
 						maxlng: maxLng,
 						minimal: 'f',
 						limit: 10
-					};
+					},
+					moreButton = $("#moreButton");
 					
-				$("#resultsList > li").not("#loadingResults").remove();
-				$("#tagControls").empty();
-				tagRefs = {};
-				allRefs = [];
-				$("#resultsList").scrollTop(0);
-				
-				//console.log(cuisine);
 				if (cuisine && cuisine != "") params["tags"] = cuisine;
-								
-				$.each(markers, function (i,e) {
-					e.setMap(null);
-				});
-				markers = [];
 				
+				if (more) {
+					moreButton.addClass("disabled");
+					params["offset"] = $("#resultsList > li").length - 1;
+				}
+				else {	
+					$("#resultsList > li").remove();
+					$("#tagControls").empty();
+					tagRefs = {};
+					allRefs = [];
+					$("#resultsListContainer").scrollTop(0);
+					$.each(markers, function (i,e) {
+						e.setMap(null);
+					});
+					markers = [];
+				}
+
+				$("#loadingResults").show();								
 				$.ajax({
 					url:  "http://api.hunch.com/api/v1/get-similar-results/",
 					data: params,
 					dataType: 'jsonp',
 					success: function (data) {
 						$("#loadingResults").hide();
+						moreButton.removeClass("disabled");
+						
 						var list = $("#resultsList");
-						if (data.total > 0) {
+						if (data.results.length > 0) {
+							moreButton.show();							
 							$.each(data.results, function (i,e) {
 								//console.log(e);
 								var pos = new google.maps.LatLng(e.lat, e.lng),
@@ -505,6 +588,10 @@
 								latlngbounds.extend( markers[ i ].getPosition() );
 							}
 							map.fitBounds( latlngbounds );
+						}
+						else if (more) {
+							moreButton.hide();
+							alert("sorry, no more results");
 						}
 						else {
 							alert("sorry, no results. try choosing a more general location.");
@@ -551,6 +638,12 @@
 				button.toggleClass("expanded");
 				$("#advancedControls").slideToggle();
 			});	
+			
+			$("#moreButton").click(function () {
+				var button = $(this);
+				if (button.hasClass("disabled")) return;
+				else pingHunch(true);
+			});
 			
 			$("#showAll").click(function () {
 				$("#tagControls li").addClass("hidden");
@@ -633,9 +726,7 @@
 			
 			$("#lookup").click(function () {
 				var lookup = function () {
-					$("#loadingResults").show();
-					//$("#mapCanvas").show();
-					//var bounds;
+					$("#moreButton").hide();
 				
 					if (!map) {
 						map = new google.maps.Map(document.getElementById("mapCanvas"), { 
@@ -645,32 +736,39 @@
 							mapTypeControl: true
 						});
 						google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
-							$("#resultsList").show();
+							$("#resultsListContainer").show();
 							pingHunch();
 						});
 					}
 					else pingHunch();
 				}
 				
-				if (!location) {
+				if (!resultId && $("#restaurant").hasClass("formFresh"))
+					alert("please select a restaurant");	
+				else if (!resultId)
+					alert("please select a restaurant using the autocomplete box");
+				else if (!location) {
 					var locationInput = $("#location");
-					geocoder.geocode( { 'address': locationInput.val()}, function (results, status) {
-						if (status == google.maps.GeocoderStatus.OK) {
-							locationInput.val(results[0].formatted_address);
-							location = results[0].formatted_address;
-							viewport = results[0].geometry.viewport;
-							center = results[0].geometry.viewport.getCenter();
-							maxLat = results[0].geometry.viewport.getNorthEast().lat();
-							maxLng = results[0].geometry.viewport.getNorthEast().lng();
-							minLat = results[0].geometry.viewport.getSouthWest().lat();
-							minLng = results[0].geometry.viewport.getSouthWest().lng();
+					if (locationInput.hasClass("formFresh")) 
+						alert("please enter a location");
+					else {
+						geocoder.geocode( { 'address': locationInput.val()}, function (results, status) {
+							if (status == google.maps.GeocoderStatus.OK) {
+								locationInput.val(results[0].formatted_address);
+								location = results[0].formatted_address;
+								viewport = results[0].geometry.viewport;
+								center = results[0].geometry.viewport.getCenter();
+								maxLat = results[0].geometry.viewport.getNorthEast().lat();
+								maxLng = results[0].geometry.viewport.getNorthEast().lng();
+								minLat = results[0].geometry.viewport.getSouthWest().lat();
+								minLng = results[0].geometry.viewport.getSouthWest().lng();
 						
-							lookup();
-						}
-						else
-							alert("sorry, you must enter a location that google maps recognizes.");
-					});
-
+								lookup();
+							}
+							else
+								alert("sorry, you must enter a location that google recognizes.");
+						});
+					}
 				}
 				else lookup();
 			});
@@ -689,7 +787,7 @@
 				<h2>a restaurant recommendation tool</h2>
 			</div>
 			<div id="info">
-				<div id="powered">powered by the <span>hunch</span> api</div>
+				<div id="powered">powered by the <span class='hunch'>hunch</span> api</div>
 				<div id="hacked">
 					<a href="http://www.twitter.com/matthandlersux" target="_new">@matthandlersux</a>
 					<br/>
@@ -721,8 +819,10 @@
 			<div id="mapContainer">
 				<div id="mapCanvas" style="width:400px;height:400px;"></div>
 			</div>
-			<ul id="resultsList">
-				<li id="loadingResults">calling Hunch API</li>
+			<div id="resultsListContainer">
+				<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
+				<ul id="resultsList"></ul>
+				<div id="moreButton">Load More Results</div>
 			</ul>
 		</div>
 		<!--
@@ -730,6 +830,10 @@
 		</div>
 		-->
 	</div>
-
+	<div id="overlayBox">
+		<div id="message">
+		
+		</div>
+	</div>
 </body>
 </html>
