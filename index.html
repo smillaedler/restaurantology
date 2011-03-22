@@ -50,7 +50,7 @@
 			position: relative;
 		}
 		
-		#lookup, #moreButton {
+		#lookup, #moreButton, .button {
 			cursor: pointer;
 			-moz-box-shadow: 0 1px 0 #C2C1F7;
 			-webkit-box-shadow: 0 1px 0 #C2C1F7;
@@ -67,12 +67,20 @@
 			padding: 4px 10px 7px;
 		}
 		
-		#lookup:hover, #moreButton:hover {
+		#lookup:hover, #moreButton:hover, .button:hover {
 			background-color: #50A0D5;
 		}
 		
-		#lookup:disabled, #moreButton.disabled {
+		#lookup:disabled, #moreButton.disabled, .button.disabled {
 			opacity: 0.3;
+		}
+		
+		#reloadButton {
+			position: absolute;
+			display: none;
+			bottom: 5px;
+			right: 5px;
+			text-align: center;
 		}
 		
 		#moreButton {
@@ -134,9 +142,9 @@
 		}
 		
 		#mapContainer, #resultsListContainer {
-			width: 40%;
 			display: inline-block;
 			vertical-align: top;
+			position: relative;
 		}
 		
 		#resultsListContainer {
@@ -354,6 +362,23 @@
 			-webkit-box-shadow: 0px 0px 25px black;
 		}
 		
+		#overlayBox ul {
+			text-align: left;
+			margin: 10px;
+			list-style-type: none;
+			color: black;
+		}
+		
+		#overlayBox ul li {
+			cursor: pointer;
+			padding: 5px;
+			font-size: 80%;
+		}
+		
+		#overlayBox ul li:hover {
+			background-color: #ddd;
+		}
+		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
 			#lookup {
 				border-top-width: 1px;
@@ -519,6 +544,59 @@
 				});
 				return "rgb("+(parseInt(r/total*255))+","+(parseInt(g/total*255))+","+(parseInt(b/total*255))+")";
 			},
+			trySelectRestaurant = function (callback) {
+				var input = $("#restaurant"),
+					overlay = $("#overlayBox"),
+					message = $("#overlayBox #message"),
+					ul = $("<ul class='loading'/>"),
+					select = function (e) {
+						e.preventDefault();
+						var item = $(this);
+						resultId = item.data("resultId");
+						cuisine = item.data("cuisine");
+						$("#restaurant").val(item.data("name"));
+						overlay.fadeOut(function () { $("#lookup").click(); });
+					};
+					
+				if (input.val().length > 3) {
+					// present modal
+					message.text("please select a restaurant from the following:");
+					message.append(ul);
+					overlay.fadeIn();
+					// load options with clickthroughs
+					$.ajax({
+						url: "http://api.hunch.com/api/v1/get-results/",
+						data: {
+							name: input.val(),
+							subword: "f",
+							topic_ids: "list_restaurant",
+							minimal: "f",
+							limit: 10
+						},
+						dataType: 'jsonp',
+						success: function (data) {
+							if (data.total > 0) {
+								$.each(data.results, function (i,e) {
+									var li = $("<li/>");
+									
+									li.data("resultId", e.result_id)
+									.data("name", e.name)
+									.data("cuisine", e.cuisines && e.cuisines[0]);
+									
+									li.append("<strong>"+e.name+"</strong> - <em>"+e.city+"</em>");
+									li.click(select);
+									ul.append(li);
+								});
+							}
+							else {
+								ul.fadeOut();
+								message.text("sorry, restaurant not found...");
+							}
+						}
+					});
+					
+				}
+			},
 			pingHunch = function (more) {
 				var params = {
 						result_id: resultId,
@@ -646,6 +724,17 @@
 					e.li.show();
 				});
 			});
+			
+			$("#reloadButton").click(function () {
+				var bounds = map.getBounds();
+				center = map.getCenter();
+				maxLat = bounds.getNorthEast().lat();
+				maxLng = bounds.getNorthEast().lng();
+				minLat = bounds.getSouthWest().lat();
+				minLng = bounds.getSouthWest().lng();
+				$("#moreButton").hide();
+				pingHunch();
+			});
 						
 			$('#location').geo_autocomplete({
 				search: function (event, ui) {
@@ -721,6 +810,7 @@
 						});
 						google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
 							$("#resultsListContainer").show();
+							$("#reloadButton").fadeIn();
 							pingHunch();
 						});
 					}
@@ -729,8 +819,8 @@
 				
 				if (!resultId && $("#restaurant").hasClass("formFresh"))
 					alert("please select a restaurant");	
-				else if (!resultId)
-					alert("please select a restaurant using the autocomplete box");
+				else if (!resultId) 
+					trySelectRestaurant(lookup);
 				else if (!location) {
 					var locationInput = $("#location");
 					if (locationInput.hasClass("formFresh")) 
@@ -814,6 +904,7 @@
 			</div>
 			<div id="mapContainer">
 				<div id="mapCanvas" style="width:400px;height:400px;"></div>
+				<div id="reloadButton" class='button'>Reload</div>
 			</div>
 			<div id="resultsListContainer">
 				<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
