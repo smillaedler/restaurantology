@@ -5,7 +5,14 @@
 	<title>restaurantology</title>
 	<!--<script type="text/javascript" charset="utf-8" src="base64.js"></script>-->
 	<!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />-->
+	<meta property="og:title" content="Restaurantology" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="http://www.metarade.com/restaurantology" />
+	<meta property="og:image" content="http://www.metarade.com/restaurantology/logo.512.png" />
+	<meta property="og:site_name" content="Restaurantology" />
+	<meta property="fb:admins" content="700657" />
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+	<link rel="apple-touch-icon" href="logo.512.png" />
 	<link rel="stylesheet" href="../jquery-ui-1.8.11.custom/css/ui-lightness/jquery-ui-1.8.11.custom.css" />
 	<style>
 		body {
@@ -221,6 +228,7 @@
 		}
 		
 		#loadingResults {
+			border: 1px solid #ddd;
 			background-color: white;
 			background-image: url("loading.round.gif");
 			background-position: right center;
@@ -379,6 +387,35 @@
 			background-color: #ddd;
 		}
 		
+		.resultScoreBlock {
+			width: 30px;
+			height: 20px;
+			line-height: 20px;
+			position: relative;
+			background-color: #59A9D5;
+			font-size: 60%;
+			float: left;
+			margin-right: 5px;
+			text-align: center;
+		}
+		
+		.resultScoreBlock span, .resultScore {
+			position: absolute;
+			bottom: 0px;
+			right: 0px;
+			left: 0px;
+			color: white;
+		}
+		
+		.resultScore span {
+			top: 0px;
+			z-index: 10;
+		}
+		
+		.resultScore {
+			background-color: #2767AB;
+		}
+		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
 			#lookup {
 				border-top-width: 1px;
@@ -388,6 +425,10 @@
 			#tagControls li, .resultItem .tags li {
 				border-width: 0px;
 			}
+		}
+		
+		#social {
+			display: none;
 		}
 	</style>
 	<script src="../jquery-ui-1.8.11.custom/js/jquery-1.5.1.min.js"></script>
@@ -411,7 +452,7 @@
 				$("#overlayBox #message").text(text);				
 			}
 			
-			$(".formFresh").live('click.formFresh', function () {
+			$(".formFresh").live('focus.formFresh', function () {
 				var input = $(this);
 				input.val("");
 				input.removeClass("formFresh");
@@ -466,6 +507,18 @@
 					$("#tagControls").append(li);
 				}
 			},
+			drawScore = function (number) {
+				var block = $("<div class='resultScoreBlock' title='similarity score' />"),
+					percent = $("<div class='resultScore' />"),
+					text = $("<span/>");
+				
+				block.append(percent).append(text);
+				percent.css("height", parseInt(number * 100) + "%");
+				
+				text.text(parseInt(number * 100) + "%");
+				
+				return block;
+			},
 			drawRecResult = function (item, marker) {
 				var title = $("<strong/>"),
 					p = $("<div class='resultContent'/>"),
@@ -477,7 +530,7 @@
 					tags = $("<ul class='tags'/>"),
 					anchor = $("<a name='"+item.result_id+"'/>"),
 					interval;
-
+					
 				li.hoverIntent(function () {
 					clearInterval(interval);
 					blinkMarker(marker)();
@@ -492,6 +545,7 @@
 				});
 				
 				li.append(anchor)
+					.append(drawScore(item.score))
 					.append(title)
 					.append(address)
 					.append("<span>&raquo;</span>")
@@ -637,6 +691,7 @@
 					markers = [];
 				}
 
+				//console.log("http://api.hunch.com/api/v1/get-similar-results/?"+$.param(params));
 				$("#loadingResults").show();								
 				$.ajax({
 					url:  "http://api.hunch.com/api/v1/get-similar-results/",
@@ -807,6 +862,8 @@
 			});
 			
 			$("#lookup").click(function () {
+				$("#social").show();
+				
 				var lookup = function () {
 					$("#moreButton").hide();
 				
@@ -887,6 +944,14 @@
 					<a href="http://www.twitter.com/matthandlersux" target="_new">@matthandlersux</a>
 					<br/>
 					<a href="http://www.twitter.com/ronfeldman" target="_new">@ronfeldman</a>
+				</div>
+				<div id="social">
+					<div id="likeButton">
+						<iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fwww.metarade.com%2Frestaurantology&amp;layout=button_count&amp;show_faces=true&amp;width=100&amp;action=like&amp;font&amp;colorscheme=light&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:110px; height:21px;" allowTransparency="true"></iframe>
+					</div>
+					<div id="tweetButton">
+						<a href="http://twitter.com/share" class="twitter-share-button" data-text="homesick for your favorite restaurant? check out this sweet website!" data-count="horizontal" data-via="matthandlersux" data-related="ronfeldman:biz guy">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+					</div>
 				</div>
 			</div>
 		</div>
