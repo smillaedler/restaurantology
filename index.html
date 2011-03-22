@@ -519,6 +519,12 @@
 				
 				return block;
 			},
+			clearAllIntervals = function () {
+				$.each(intervals, function (i,e) {
+					clearInterval(e);
+				})
+				intervals = [];
+			},
 			drawRecResult = function (item, marker) {
 				var title = $("<strong/>"),
 					p = $("<div class='resultContent'/>"),
@@ -531,12 +537,14 @@
 					anchor = $("<a name='"+item.result_id+"'/>"),
 					interval;
 					
-				li.hoverIntent(function () {
-					clearInterval(interval);
+				li.hover(function () {
+					clearAllIntervals();
 					blinkMarker(marker)();
 					interval = setInterval(blinkMarker(marker), 800);
+					intervals.push(interval);
 				}, function () {
 					clearInterval(interval);
+					intervals.splice(intervals.indexOf(interval), 1);
 					marker.setVisible(true);
 				});
 				
@@ -735,6 +743,7 @@
 				});	
 			},
 			markers = [],
+			intervals = [],
 			bounds,
 			map,
 			minLat = 0,
