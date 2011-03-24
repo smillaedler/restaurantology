@@ -1035,13 +1035,15 @@
 			})
 			.blur(function () {
 				$(this).removeClass("loading");
-			})
-			.keydown(function (e) {
-				if (e.which == 13) {
-					$(this).blur().change();
-					$("#lookup").click();
-				}
 			});
+			// screws up autocomplete :(
+			// .keydown(function (e) {
+			// 	console.log(e);
+			// 	if (e.which == 13) {
+			// 		$(this).blur().change();
+			// 		$("#lookup").click();
+			// 	}
+			// });
 
 			
 			$( "#restaurant" ).autocomplete({
@@ -1082,13 +1084,14 @@
 			})
 			.change(function () {
 				resultId = cuisine = null;
-			})
-			.keydown(function (e) {
-				if (e.which == 13) {
-					$(this).blur().change();
-					$("#lookup").click();
-				}
-			});
+			}); 
+			// screws up autocomplete
+			// .keydown(function (e) {
+			// 	if (e.which == 13) {
+			// 		$(this).blur().change();
+			// 		$("#lookup").click();
+			// 	}
+			// });
 			
 			if (isiPhone()) {
 				$("#restaurant").autocomplete("destroy");
