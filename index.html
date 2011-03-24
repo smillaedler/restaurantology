@@ -536,6 +536,9 @@
 			
 			.showOnMap {
 				display: block;
+				text-align: center;
+				font-size: 80%;
+				margin: 10px;
 			}
 		}
 		
@@ -661,8 +664,12 @@
 					li = $("<li class='resultItem'>"),
 					tags = $("<ul class='tags'/>"),
 					anchor = $("<a name='"+item.result_id+"'/>"),
-					showOnMap = $("<a href='#mapView' class='showOnMap'>click to view on map</a>"),
+					showOnMap = $("<a href='#mapView' class='showOnMap'>click here to view on map</a>"),
 					interval;
+					
+				showOnMap.click(function () {
+					window.scrollTo(0,$("#mapContainer").offset().top);
+				});	
 					
 				li.hover(function () {
 					clearAllIntervals();
