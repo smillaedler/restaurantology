@@ -827,6 +827,11 @@
 					
 				if (input.val().length > 3) {
 					// present modal
+					if (isiPhone()) {
+						//$("h1").text("shit");
+						window.scrollTo(0,1);
+					}					
+					
 					message.text("please select a restaurant from the following:");
 					message.append(ul);
 					overlay.fadeIn();
