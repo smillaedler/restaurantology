@@ -625,6 +625,7 @@
 		(function () {
 			window.alert = function (text) {
 				if (isiPhone()) {
+					//$("h1").text("shit");
 					window.scrollTo(0,1);
 				}
 				$("#overlayBox").fadeIn();
@@ -872,6 +873,7 @@
 						minlng: minLng,
 						maxlng: maxLng,
 						minimal: 'f',
+						exclude_chains: 1,
 						limit: 10
 					},
 					moreButton = $("#moreButton");
@@ -1072,6 +1074,7 @@
 							subword: "f",
 							topic_ids: "list_restaurant",
 							minimal: "f",
+							exclude_chains: 1,
 							limit: 10
 						},
 						dataType: 'jsonp',
