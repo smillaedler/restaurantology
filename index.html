@@ -511,12 +511,13 @@
 			drawScore = function (number) {
 				var block = $("<div class='resultScoreBlock' title='similarity score' />"),
 					percent = $("<div class='resultScore' />"),
-					text = $("<span/>");
+					text = $("<span/>"),
+					n = parseInt(((number + 1)/2)*100) + "%";
 				
 				block.append(percent).append(text);
-				percent.css("height", parseInt(number * 100) + "%");
+				percent.css("height", n);
 				
-				text.text(parseInt(number * 100) + "%");
+				text.text(n);
 				
 				return block;
 			},
@@ -570,7 +571,7 @@
 				
 				if (item.image_urls[0] && item.image_urls[0] != "") { 
 					var imgContainer = $("<a href='"+item.image_urls[0]+"' rel='lightbox["+item.result_id+"]'/>");
-					img.attr("src", item.image_urls[0]);
+					img.attr("src", item.image_url);
 					p.append(imgContainer.append(img));
 					imgContainer.lightBox({
 						imageLoading: 'jquery-lightbox-0.5/images/lightbox-ico-loading.gif',
@@ -824,6 +825,7 @@
 				},
 				maptype: 'roadmap',
 				select: function(_event, _ui) {
+					// this event happens after the change event
 					$("#location").removeClass("loading");
 					$("#location").val(_ui.item.label);
 					if (_ui.item.viewport) {
@@ -838,6 +840,9 @@
 					enable();
 				}
 			})
+			.change(function () {
+				viewport = location = center = maxLng = maxLat = minLat = minLng = null;
+			})
 			.blur(function () {
 				$(this).removeClass("loading");
 			});
@@ -848,6 +853,7 @@
 					$("#restaurant").addClass("loading");
 				},
 				select: function (event, ui) {
+					// fires after the change event
 					resultId = ui.item.resultId;
 					if (ui.item.cuisines) cuisine = ui.item.cuisines[0];
 					enable();
@@ -877,6 +883,9 @@
 						error: finish
 					})
 				}
+			})
+			.change(function () {
+				resultId = cuisine = null;
 			});
 			
 			$("#lookup").click(function () {
