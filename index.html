@@ -1094,8 +1094,22 @@
 			// });
 			
 			if (isiPhone()) {
-				$("#restaurant").autocomplete("destroy");
-				$("#location").autocomplete("destroy");
+				$("#restaurant").autocomplete("destroy")
+				.keydown(function (e) {
+					if (e.which == 13) {
+						$(this).blur().change();
+						$("#lookup").click();
+					}
+				});
+				
+				$("#location").autocomplete("destroy")
+				.keydown(function (e) {
+					if (e.which == 13) {
+						$(this).blur().change();
+						$("#lookup").click();
+					}
+				});
+				
 				mapCanvas = "mapCanvasMobile";
 			}
 			else $("#mapCanvas").css("display","block");
