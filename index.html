@@ -425,6 +425,10 @@
 			display: none;
 		}
 		
+		.showOnMap {
+			display: none;
+		}
+		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
 			#lookup {
 				border-top-width: 1px;
@@ -529,6 +533,10 @@
 				left: 300px;
 				right: auto;
 			}
+			
+			.showOnMap {
+				display: block;
+			}
 		}
 		
 		#social {
@@ -562,6 +570,7 @@
 			window.alert = function (text) {
 				if (isiPhone()) {
 					$("body").css("min-height",1000);
+					window.scrollTo(0,1);
 				}
 				$("#overlayBox").fadeIn();
 				$("#overlayBox #message").text(text);				
@@ -652,6 +661,7 @@
 					li = $("<li class='resultItem'>"),
 					tags = $("<ul class='tags'/>"),
 					anchor = $("<a name='"+item.result_id+"'/>"),
+					showOnMap = $("<a href='#mapView' class='showOnMap'>click to view on map</a>"),
 					interval;
 					
 				li.hover(function () {
@@ -675,7 +685,8 @@
 					.append(address)
 					.append("<span>&raquo;</span>")
 					.append(link)
-					.append(p);
+					.append(p)
+					.append(showOnMap);
 					
 				if (item.address)
 					address.html(item.address.replace(/\n/g,' ')+(item.phone ? " &middot; " + item.phone : ""));
@@ -1140,10 +1151,12 @@
 					<ul id="tagControls"></ul>
 				</div>
 			</div>
-			<div id="mapContainer">
-				<div id="mapCanvas" style="width:400px;height:400px;"></div>
-				<div id="reloadButton" class='button'>Reload</div>
-			</div>
+			<a name="mapView">
+				<div id="mapContainer">
+					<div id="mapCanvas" style="width:400px;height:400px;"></div>
+					<div id="reloadButton" class='button'>Reload</div>
+				</div>
+			</a>
 			<div id="resultsListContainer">
 				<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
 				<ul id="resultsList"></ul>
