@@ -469,6 +469,7 @@
 			
 			#overlayBox {
 				background: none;
+				padding: 0px;
 			}
 			
 			#overlayBox #message {
@@ -939,6 +940,12 @@
 			})
 			.blur(function () {
 				$(this).removeClass("loading");
+			})
+			.keydown(function (e) {
+				if (e.which == 13) {
+					$(this).blur();
+					$("#lookup").click();
+				}
 			});
 
 			
@@ -980,6 +987,12 @@
 			})
 			.change(function () {
 				resultId = cuisine = null;
+			})
+			.keydown(function (e) {
+				if (e.which == 13) {
+					$(this).blur();
+					$("#lookup").click();
+				}
 			});
 			
 			if (isiPhone()) {
