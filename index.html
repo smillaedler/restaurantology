@@ -560,6 +560,9 @@
 
 		(function () {
 			window.alert = function (text) {
+				if (isiPhone()) {
+					$("body").css("min-height",1000);
+				}
 				$("#overlayBox").fadeIn();
 				$("#overlayBox #message").text(text);				
 			}
