@@ -931,6 +931,10 @@
 							moreButton.hide();
 							alert("sorry, no more results");
 						}
+						else if (cuisine) {
+							cuisine = null;
+							pingHunch();
+						}
 						else {
 							alert("sorry, no results. try choosing a more general location.");
 						}
