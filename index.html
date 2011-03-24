@@ -3,8 +3,13 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>restaurantology</title>
-	<!--<script type="text/javascript" charset="utf-8" src="base64.js"></script>-->
 	<!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />-->
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=yes;" />
+	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<link rel="apple-touch-icon" href="http://www.metarade.com/restaurantology/logo.512.png" />
+	<link rel="apple-touch-icon-precomposed" href="http://www.metarade.com/restaurantology/logo.512.png" />
+	<link rel="apple-touch-startup-image" href="http://www.metarade.com/restaurantology/logo.512.png" />
 	<meta property="og:title" content="Restaurantology" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="http://www.metarade.com/restaurantology" />
@@ -170,18 +175,18 @@
 			position: relative;
 		}
 		
-		#resultsList > li {
+		#resultsList li.resultItem {
 			padding: 10px;
 			margin-bottom: 10px;
 			border: 1px solid transparent;
 		}
 		
-		#resultsList > li:hover {
+		#resultsList li.resultItem:hover {
 			border: 1px solid #ddd;
 			background-color: #fafafa;
 		}	
 		
-		#resultsList > li:hover .resultPrice {
+		#resultsList li.resultItem:hover .resultPrice {
 			display: inline-block;
 		}
 		
@@ -428,12 +433,84 @@
 		}
 		
 		@media screen and (max-device-width: 480px) {
-			#mapContainer {
-				position: fixed;
+			body {
+				width: 480px;
+				padding: 0px;
+				margin: 0px;
+				min-width: 480px;
+				min-height: 500px;
+			}
+			
+			h1 {
+				font-size: 180%;
+			}
+			
+			h2 {
+				font-size: 100%;
+			}
+			
+			#controls {
+				margin-top: 20px;
+				padding: 5px;
+				-webkit-border-radius: 0px;
+			}
+			
+			#controls #advancedControlsButton {
+				display: none;
+			}
+			
+			#controls:hover #advancedControlsButton {
+				display: none;
+			}
+			
+			#social {
+				float: left;
+			}
+			
+			#overlayBox {
+				background: none;
+			}
+			
+			#overlayBox #message {
+				width: 90%;
+				padding: 15px 10px;
+				-webkit-box-shadow: 0px 0px 30px #444;
 			}
 			
 			#resultsListContainer {
 				overflow-y: visible;
+				width: 100%;
+			}
+			
+			#mapContainer, #resultsListContainer {
+				margin: 0px;
+				padding: 0px;
+				display: block;
+				float: none;
+			}
+			
+			#mapContainer #mapCanvas{
+				margin: 0px auto;
+			}
+			
+			#resultsList {
+				padding: 0px;
+				background-color: #aaa;
+			}
+			
+			#resultsList li.resultItem {
+				background-color: #f4f4f4;
+				margin-bottom: 2px;
+			}
+			
+			#resultsList li.resultItem:hover {
+				border-color: #888;
+				background-color: white;
+			}
+			
+			#reloadButton {
+				left: 300px;
+				right: auto;
 			}
 		}
 		
@@ -456,6 +533,13 @@
 		* @author    Brian Cherne brian(at)cherne(dot)net
 		*/
 		//(function($){$.fn.hoverIntent=function(f,g){var cfg={sensitivity:7,interval:100,timeout:0};cfg=$.extend(cfg,g?{over:f,out:g}:f);var cX,cY,pX,pY;var track=function(ev){cX=ev.pageX;cY=ev.pageY};var compare=function(ev,ob){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t);if((Math.abs(pX-cX)+Math.abs(pY-cY))<cfg.sensitivity){$(ob).unbind("mousemove",track);ob.hoverIntent_s=1;return cfg.over.apply(ob,[ev])}else{pX=cX;pY=cY;ob.hoverIntent_t=setTimeout(function(){compare(ev,ob)},cfg.interval)}};var delay=function(ev,ob){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t);ob.hoverIntent_s=0;return cfg.out.apply(ob,[ev])};var handleHover=function(e){var ev=jQuery.extend({},e);var ob=this;if(ob.hoverIntent_t){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t)}if(e.type=="mouseenter"){pX=ev.pageX;pY=ev.pageY;$(ob).bind("mousemove",track);if(ob.hoverIntent_s!=1){ob.hoverIntent_t=setTimeout(function(){compare(ev,ob)},cfg.interval)}}else{$(ob).unbind("mousemove",track);if(ob.hoverIntent_s==1){ob.hoverIntent_t=setTimeout(function(){delay(ev,ob)},cfg.timeout)}}};return this.bind('mouseenter',handleHover).bind('mouseleave',handleHover)}})(jQuery);
+
+		function isiPhone(){
+		    return (
+		        (navigator.platform.indexOf("iPhone") != -1) ||
+		        (navigator.platform.indexOf("iPod") != -1)
+		    );
+		}
 
 		(function () {
 			window.alert = function (text) {
@@ -662,7 +746,7 @@
 							subword: "f",
 							topic_ids: "list_restaurant",
 							minimal: "f",
-							limit: 10
+							limit: 15
 						},
 						dataType: 'jsonp',
 						success: function (data) {
@@ -898,6 +982,11 @@
 				resultId = cuisine = null;
 			});
 			
+			if (isiPhone()) {
+				$("#restaurant").autocomplete("destroy");
+				$("#location").autocomplete("destroy");
+			}
+			
 			$("#lookup").click(function () {
 				$("#social").show();
 				
@@ -1003,7 +1092,7 @@
 
 					<label for="slider">but I <strong>live</strong> in:</label>
 				 	<input type="text" id="location" value="city name..." class="formFresh" />
-					<button id="lookup" disabled>Discover</button>
+					<button id="lookup">Discover</button>
 				</div>
 				<div id="advancedControlsButton">
 					<a>advanced</a> 
