@@ -8,7 +8,6 @@
 	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=yes;" />
 	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<link rel="apple-touch-icon" href="http://www.metarade.com/restaurantology/logo.512.png" />
-	<link rel="apple-touch-icon-precomposed" href="http://www.metarade.com/restaurantology/logo.512.png" />
 	<link rel="apple-touch-startup-image" href="http://www.metarade.com/restaurantology/logo.512.png" />
 	<meta property="og:title" content="Restaurantology" />
 	<meta property="og:type" content="website" />
@@ -429,6 +428,10 @@
 			display: none;
 		}
 		
+		#mapContainer #mapCanvasMobile {
+			display: none;
+		}
+		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
 			#lookup {
 				border-top-width: 1px;
@@ -442,10 +445,10 @@
 		
 		@media screen and (max-device-width: 480px) {
 			body {
-				width: 480px;
+				width: 100%;
 				padding: 0px;
 				margin: 0px;
-				min-width: 480px;
+				min-width: 100%;
 				min-height: 500px;
 			}
 			
@@ -457,10 +460,37 @@
 				font-size: 100%;
 			}
 			
+			#header #info {
+				position: relative;
+			}
+			
+			#advancedControls {
+				margin: 0px;
+			}
+			
+			#header #info #social {
+				position: absolute;
+				display: block;
+				left: 10px;
+				top: 0px;
+			}
+			
 			#controls {
 				margin-top: 20px;
 				padding: 5px;
+				font-size: 80%;
 				-webkit-border-radius: 0px;
+				text-align: right;
+			}
+			
+			#controls label {
+				display: block;
+				text-align: left;
+			}
+			
+			#controls input {
+				text-align: left;
+				width: 90%;
 			}
 			
 			#controls #advancedControlsButton {
@@ -480,10 +510,14 @@
 				padding: 10px;
 			}
 			
+			#overlayBox ul {
+				margin: 0px;
+			}
+			
 			#overlayBox #message {
 				width: 90%;
 				padding: 20px 10px;
-				font-size: 80%;
+				font-size: 90%;
 				-webkit-box-shadow: 0px 0px 30px #444;
 				position: relative;
 			}
@@ -510,8 +544,14 @@
 				float: none;
 			}
 			
-			#mapContainer #mapCanvas{
+			#mapContainer #mapCanvasMobile{
 				margin: 0px auto;
+				display: block;
+				padding: 0px;
+			}
+			
+			#mapContainer #mapCanvas {
+				display: none;
 			}
 			
 			#resultsList {
@@ -530,15 +570,20 @@
 			}
 			
 			#reloadButton {
-				left: 300px;
 				right: auto;
+				left: 20px;
 			}
 			
 			.showOnMap {
 				display: block;
 				text-align: center;
 				font-size: 80%;
-				margin: 10px;
+				margin: 10px 0px;
+			}
+			
+			.resultItem .tags {
+				display: inline-block;
+				width: 40%;
 			}
 		}
 		
@@ -898,6 +943,7 @@
 			viewport,
 			location,
 			center,
+			mapCanvas = "mapCanvas",
 			geocoder = new google.maps.Geocoder(),
 		    markerImage = new google.maps.MarkerImage("marker.png",
 		        new google.maps.Size(24.0, 29.0),
@@ -1040,7 +1086,9 @@
 			if (isiPhone()) {
 				$("#restaurant").autocomplete("destroy");
 				$("#location").autocomplete("destroy");
+				mapCanvas = "mapCanvasMobile";
 			}
+			else $("#mapCanvas").css("display","block");
 			
 			$("#lookup").click(function () {
 				$("#social").show();
@@ -1049,7 +1097,7 @@
 					$("#moreButton").hide();
 				
 					if (!map) {
-						map = new google.maps.Map(document.getElementById("mapCanvas"), { 
+						map = new google.maps.Map(document.getElementById(mapCanvas), { 
 							mapTypeId: google.maps.MapTypeId.ROADMAP,
 							center: center,
 							zoom: 12,
@@ -1142,10 +1190,10 @@
 				<div data-role="fieldcontain">
 					<!-- i wish i could eat at ___ but i live in ___ -->
 					<!-- i am looking for a place like ___ in ___ -->
-					<label for="slider">I am <strong>homesick</strong> for:</label>
+					<label for="restaurant">I am <strong>homesick</strong> for:</label>
 				 	<input type="text" id="restaurant" value="restaurant name..." class="formFresh" />
 
-					<label for="slider">but I <strong>live</strong> in:</label>
+					<label for="location">but I <strong>live</strong> in:</label>
 				 	<input type="text" id="location" value="city name..." class="formFresh" />
 					<button id="lookup">Discover</button>
 				</div>
@@ -1158,12 +1206,11 @@
 					<ul id="tagControls"></ul>
 				</div>
 			</div>
-			<a name="mapView">
-				<div id="mapContainer">
-					<div id="mapCanvas" style="width:400px;height:400px;"></div>
-					<div id="reloadButton" class='button'>Reload</div>
-				</div>
-			</a>
+			<div id="mapContainer">
+				<div id="mapCanvas" style="display:none;width:400px;height:400px;"></div>
+				<div id="mapCanvasMobile" style="width:300px;height:400px;"></div>
+				<div id="reloadButton" class='button'>Reload</div>
+			</div>
 			<div id="resultsListContainer">
 				<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
 				<ul id="resultsList"></ul>
