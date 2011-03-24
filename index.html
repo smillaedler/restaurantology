@@ -876,7 +876,7 @@
 					},
 					moreButton = $("#moreButton");
 					
-				if (cuisine && cuisine != "") params["tags"] = cuisine;
+				if (cuisine && cuisine != "") params["tags"] = cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' ').trim();
 				
 				if (more) {
 					moreButton.addClass("disabled");
