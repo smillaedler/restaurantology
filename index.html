@@ -608,6 +608,8 @@
 	<script src="../jquery-ui-1.8.11.custom/js/jquery-ui-1.8.11.custom.min.js"></script>
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
 	<script type="text/javascript" src="../geo-autocomplete/ui.geo_autocomplete.js"></script>
+	<script src="http://code.google.com/apis/gears/gears_init.js" type="text/javascript" charset="utf-8"></script>
+	<script src="geo-location-javascript/js/geo.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript" charset="utf-8">
 		/**
 		* hoverIntent r6 // 2011.02.26 // jQuery 1.5.1+
@@ -1181,6 +1183,38 @@
 				}
 				else lookup();
 			});
+			
+			if(geo_position_js.init()){
+				geo_position_js.getCurrentPosition(function (position) {
+					//console.log(position.coords.latitude, position.coords.longitude);
+					if (geocoder) {
+						geocoder.geocode({
+							location: new google.maps.LatLng(position.coords.latitude,position.coords.longitude)
+						}, function (results, status) {
+							//console.log(results);
+							var whichLocation;
+							if (status == google.maps.GeocoderStatus.OK) {
+								$.each(results, function (i,e) {
+									if (e.types.indexOf("neighborhood") != -1) 
+										whichLocation = e;
+								});
+								whichLocation = whichLocation || results[0];
+								
+								$("#location").val(whichLocation.formatted_address).removeClass("formFresh");
+								location = whichLocation.formatted_address;
+								viewport = whichLocation.geometry.viewport;
+								center = whichLocation.geometry.viewport.getCenter();
+								maxLat = whichLocation.geometry.viewport.getNorthEast().lat();
+								maxLng = whichLocation.geometry.viewport.getNorthEast().lng();
+								minLat = whichLocation.geometry.viewport.getSouthWest().lat();
+								minLng = whichLocation.geometry.viewport.getSouthWest().lng();						
+							}
+						});
+					}
+				},function () {
+					"boo";
+				});
+			}
 
 		});
 	</script>
