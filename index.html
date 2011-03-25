@@ -142,7 +142,7 @@
 			color: #DC0A8E;
 		}
 		
-		#controls input {
+		#controls input[type=text] {
 			margin: 3px 15px;
 			min-width: 200px;
 			padding: 8px;
@@ -253,6 +253,10 @@
 		#advancedControls {
 			font-size: 80%;
 			margin: 20px;
+		}
+		
+		#advancedControls > div {
+			margin: 20px 0px;
 		}
 		
 		#advancedControls label {
@@ -433,6 +437,27 @@
 		
 		#mapContainer #mapCanvasMobile {
 			display: none;
+		}
+		
+		.selectable {
+			-moz-border-radius: 10px;
+			-webkit-border-radius: 10px;
+			display: inline-block;
+			background-color: #ddd;
+			padding: 6px 8px;
+			min-width: 100px;
+			text-align: center;
+			margin: 0px 5px;
+			cursor: pointer;
+			border: 1px solid transparent;
+			color: #666;
+		}
+		
+		.selectable.selected {
+			background-color: #444;
+			color: white;
+			font-weight: bold;
+			border-color: black;
 		}
 		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
@@ -695,6 +720,8 @@
 				}
 			},
 			drawScore = function (number) {
+				// fix for harold's janky api
+				if (typeof number != "number") number = number[number.length - 1];
 				var block = $("<div class='resultScoreBlock' title='similarity score' />"),
 					percent = $("<div class='resultScore' />"),
 					text = $("<span/>"),
@@ -875,9 +902,20 @@
 					
 				}
 			},
+			switchMethod = function (m) {
+				if (m == "similar") {
+					method = "get-similar-results";
+					pivot = "result_id";
+					resultKey = "results";
+				}
+				else {
+					method = "get-recommendations";
+					pivot = "likes";
+					resultKey = "recommendations";
+				}
+			},
 			pingHunch = function (more) {
 				var params = {
-						result_id: resultId,
 						topic_ids: "list_restaurant",
 						minlat: minLat,
 						maxlat: maxLat,
@@ -889,6 +927,14 @@
 					},
 					moreButton = $("#moreButton");
 					
+				// this is either get-similar-results or get-recommendations
+				params[pivot] = resultId;
+				
+				if (method == "get-recommendations") {
+					//extra params
+					params.popularity = 1;
+				}
+				
 				if (cuisine && cuisine != "") params["tags"] = cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' ').trim();
 				
 				if (more) {
@@ -907,10 +953,10 @@
 					markers = [];
 				}
 
-				//console.log("http://api.hunch.com/api/v1/get-similar-results/?"+$.param(params));
+				if (window.location.href.indexOf("debug") != -1) console.log("http://api.hunch.com/api/v1/"+method+"/?"+$.param(params));
 				$("#loadingResults").show();								
 				$.ajax({
-					url:  "http://api.hunch.com/api/v1/get-similar-results/",
+					url:  "http://api.hunch.com/api/v1/"+method+"/",
 					data: params,
 					dataType: 'jsonp',
 					success: function (data) {
@@ -918,9 +964,9 @@
 						moreButton.removeClass("disabled");
 						
 						var list = $("#resultsList");
-						if (data.results.length > 0) {
+						if (data[resultKey].length > 0) {
 							moreButton.show();							
-							$.each(data.results, function (i,e) {
+							$.each(data[resultKey], function (i,e) {
 								var pos = new google.maps.LatLng(e.lat, e.lng),
 									marker = new google.maps.Marker({
 										map: map,
@@ -954,6 +1000,9 @@
 					}
 				});	
 			},
+			pivot = "result_id", // or likes for get-recommendations
+			method = "get-similar-results", // or get-recommendations
+			resultKey = "results", // or recommendations
 			markers = [],
 			intervals = [],
 			bounds,
@@ -1024,6 +1073,19 @@
 				minLng = bounds.getSouthWest().lng();
 				$("#moreButton").hide();
 				pingHunch();
+			});
+			
+			$(".selectable").click(function () {
+				var t = $(this);
+				if (t.hasClass("selected")) return;
+				t.toggleClass("selected");
+				// t.children("input").attr("name", t.attr("alt"));
+				t.siblings(".selectable").removeClass("selected");
+				// t.siblings(".selectable").children("input").attr("name", "");
+			});
+			
+			$(".switchMethod").click(function () {
+				switchMethod($(this).attr("alt"));
 			});
 						
 			$('#location').geo_autocomplete({
@@ -1184,7 +1246,7 @@
 				else lookup();
 			});
 			
-			if(geo_position_js.init()){
+			if ((window.location.href.indexOf("file://") == -1) && geo_position_js.init()){
 				geo_position_js.getCurrentPosition(function (position) {
 					//console.log(position.coords.latitude, position.coords.longitude);
 					if (geocoder) {
@@ -1195,6 +1257,7 @@
 							var whichLocation;
 							if (status == google.maps.GeocoderStatus.OK) {
 								$.each(results, function (i,e) {
+									//console.log(e.types, e.formatted_address);
 									if (e.types.indexOf("neighborhood") != -1) 
 										whichLocation = e;
 								});
@@ -1276,8 +1339,14 @@
 					<div id="advancedButton"></div>
 				</div>
 				<div id="advancedControls" class="hidden">
-					<a id="showAll">Show All</a> or <label>Show Only:</label>
-					<ul id="tagControls"></ul>
+					<div>
+						<label>Recommendation engine:</label>
+						<div class='switchMethod selectable selected' alt='similar'>Normal</div><div class='switchMethod selectable' alt='experimental'>Hunch Experimental</div>
+					</div>
+					<div>
+						<a id="showAll">Show All</a> or <label>Show Only:</label>
+						<ul id="tagControls"></ul>
+					</div>
 				</div>
 			</div>
 			<div id="mapContainer">
