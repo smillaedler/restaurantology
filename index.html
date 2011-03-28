@@ -258,6 +258,7 @@
 		
 		#advancedControls > div {
 			margin: 20px 0px;
+			min-height: 27px;
 		}
 		
 		#advancedControls label {
@@ -459,6 +460,20 @@
 			color: white;
 			font-weight: bold;
 			border-color: black;
+		}
+		
+		#resultPopularity {
+			width: 300px;
+			display: inline-block;
+			margin-left: 20px;
+			vertical-align: bottom;
+		}
+		
+		#resultPopularityNumber {
+			margin: 0px 10px;
+			font-size: 120%;
+			padding: 5px;
+			background-color: white;
 		}
 		
 		@media screen and (-webkit-min-device-pixel-ratio:0) {
@@ -907,6 +922,9 @@
 					
 				}
 			},
+			switchCuisineMatch = function (m) {
+				cuisineMatch = (m == "true");
+			},
 			switchMethod = function (m) {
 				if (m == "similar") {
 					method = "get-similar-results";
@@ -937,10 +955,10 @@
 				
 				if (method == "get-recommendations") {
 					//extra params
-					params.popularity = 1;
+					params.popularity = resultPopularity;
 				}
 				
-				if (cuisine && cuisine != "") params["tags"] = cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' ').trim();
+				if (cuisineMatch && cuisine && cuisine != "") params["tags"] = cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' ').trim();
 				
 				if (more) {
 					moreButton.addClass("disabled");
@@ -996,6 +1014,7 @@
 							alert("sorry, no more results");
 						}
 						else if (cuisine) {
+							alert("sorry, no matches for "+cuisine+", showing results for all cuisines.");
 							cuisine = null;
 							pingHunch();
 						}
@@ -1010,6 +1029,8 @@
 			resultKey = "results", // or recommendations
 			markers = [],
 			intervals = [],
+			resultPopularity = 0.5,
+			cuisineMatch = true,
 			bounds,
 			map,
 			minLat = 0,
@@ -1091,6 +1112,20 @@
 			
 			$(".switchMethod").click(function () {
 				switchMethod($(this).attr("alt"));
+			});
+			
+			$(".switchCuisineMatch").click(function () {
+				switchCuisineMatch($(this).attr("alt"));
+			})
+			
+			$("#resultPopularity").slider({
+				min: 0,
+				max: 100,
+				value: 50,
+				slide: function (event, ui) {
+					resultPopularity = ui.value/100;
+					$("#resultPopularityNumber").text(ui.value/100);
+				}
 			});
 						
 			$('#location').geo_autocomplete({
@@ -1263,8 +1298,10 @@
 							if (status == google.maps.GeocoderStatus.OK) {
 								$.each(results, function (i,e) {
 									//console.log(e.types, e.formatted_address);
-									if (e.types.indexOf("neighborhood") != -1) 
+									if (e.types.indexOf("neighborhood") != -1) {
 										whichLocation = e;
+										return false;
+									}
 								});
 								whichLocation = whichLocation || results[0];
 								
@@ -1347,6 +1384,14 @@
 					<div>
 						<label>Recommendation engine:</label>
 						<div class='switchMethod selectable selected' alt='similar'>Normal</div><div class='switchMethod selectable' alt='experimental'><span class='hunch'>Hunch</span> Experimental</div>
+					</div>
+					<!--<div>
+						<label>Force Cuisine Match:</label>
+						<div class='switchCuisineMatch selectable selected' alt='true'>yes</div><div class='switchCuisineMatch selectable' alt='false'>no</div>
+					</div>-->
+					<div>
+						<label>Result Popularity:</label>
+						<div id="resultPopularity"></div><span id="resultPopularityNumber">0.5</span>
 					</div>
 					<div>
 						<a id="showAll">Show All</a> or <label>Show Only:</label>
