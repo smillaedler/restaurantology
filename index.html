@@ -487,7 +487,7 @@
 			}
 		}
 		
-		@media screen and (max-device-width: 480px) {
+		@media screen and (max-device-width: 480px), screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait) {
 			body {
 				width: 100%;
 				padding: 0px;
@@ -669,7 +669,9 @@
 		function isiPhone(){
 		    return (
 		        (navigator.platform.indexOf("iPhone") != -1) ||
-		        (navigator.platform.indexOf("iPod") != -1)
+		        (navigator.platform.indexOf("iPod") != -1) ||
+				(navigator.platform.indexOf("iPad") != -1) ||
+				(navigator.userAgent.toLowerCase().indexOf("android") != -1)
 		    );
 		}
 
@@ -958,7 +960,7 @@
 					params.popularity = resultPopularity;
 				}
 				
-				if (cuisineMatch && cuisine && cuisine != "") params["tags"] = cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' ').trim();
+				if (cuisineMatch && cuisine && cuisine != "") params["tags"] = $.trim(cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' '));
 				
 				if (more) {
 					moreButton.addClass("disabled");
