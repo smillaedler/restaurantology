@@ -675,6 +675,10 @@
 				(navigator.userAgent.toLowerCase().indexOf("android") != -1)
 		    );
 		}
+		
+		function isiPad() {
+			return (navigator.platform.indexOf("iPad") != -1);
+		}
 
 		(function () {
 			window.alert = function (text) {
@@ -1217,22 +1221,23 @@
 			// });
 			
 			if (isiPhone()) {
-				$("#restaurant").autocomplete("destroy")
-				.keydown(function (e) {
-					if (e.which == 13) {
-						$(this).blur().change();
-						$("#lookup").click();
-					}
-				});
+				if (!isiPad()) {
+					$("#restaurant").autocomplete("destroy")
+					.keydown(function (e) {
+						if (e.which == 13) {
+							$(this).blur().change();
+							$("#lookup").click();
+						}
+					});
 				
-				$("#location").autocomplete("destroy")
-				.keydown(function (e) {
-					if (e.which == 13) {
-						$(this).blur().change();
-						$("#lookup").click();
-					}
-				});
-				
+					$("#location").autocomplete("destroy")
+					.keydown(function (e) {
+						if (e.which == 13) {
+							$(this).blur().change();
+							$("#lookup").click();
+						}
+					});
+				}
 				mapCanvas = "mapCanvasMobile";
 			}
 			else $("#mapCanvas").css("display","block");
