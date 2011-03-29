@@ -4,6 +4,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>restaurantology - a restaurant recommendation tool</title>
+	<!-- <script src="http://localhost:8080/target/target-script-min.js"></script> -->
 	<meta name="keywords" content="restaurant,recommendation,hunch,api hack,matt handler,restaurantology" />
 	<META NAME="description" CONTENT="remember that restaurant you used to love to go to back home? restaurantology helps you find the best replacement for that in your new city" />
 	<!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a3/jquery.mobile-1.0a3.min.css" />-->
@@ -1031,7 +1032,7 @@
 			resultKey = "results", // or recommendations
 			markers = [],
 			intervals = [],
-			resultPopularity = 0.5,
+			resultPopularity = 0.05,
 			cuisineMatch = true,
 			bounds,
 			map,
@@ -1125,8 +1126,8 @@
 				max: 100,
 				value: 50,
 				slide: function (event, ui) {
-					resultPopularity = ui.value/100;
-					$("#resultPopularityNumber").text(ui.value/100);
+					resultPopularity = ui.value/1000;
+					$("#resultPopularityNumber").text(ui.value+"%");
 				}
 			});
 						
@@ -1393,7 +1394,7 @@
 					</div>-->
 					<div>
 						<label>Result Popularity:</label>
-						<div id="resultPopularity"></div><span id="resultPopularityNumber">0.5</span>
+						<div id="resultPopularity"></div><span id="resultPopularityNumber">50%</span>
 					</div>
 					<div>
 						<a id="showAll">Show All</a> or <label>Show Only:</label>
