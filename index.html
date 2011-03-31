@@ -1026,8 +1026,11 @@
 						}
 						else if (cuisine) {
 							alert("sorry, no matches for "+cuisine+" food... showing results for all cuisines.");
+							var cuisineHolder = cuisine;
 							cuisine = null;
 							pingHunch();
+							// only destroy cuisine for one call, then restore it... fixes the confusion if you change location but not restaurant
+							cuisine = cuisineHolder;
 						}
 						else {
 							alert("sorry, no results. try choosing a more general location.");
@@ -1305,11 +1308,9 @@
 						geocoder.geocode({
 							location: new google.maps.LatLng(position.coords.latitude,position.coords.longitude)
 						}, function (results, status) {
-							//console.log(results);
 							var whichLocation;
 							if (status == google.maps.GeocoderStatus.OK) {
 								$.each(results, function (i,e) {
-									//console.log(e.types, e.formatted_address);
 									if (e.types.indexOf("neighborhood") != -1) {
 										whichLocation = e;
 										return false;
