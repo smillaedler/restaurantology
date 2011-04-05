@@ -959,7 +959,8 @@
 						exclude_chains: 1,
 						limit: 10
 					},
-					moreButton = $("#moreButton");
+					moreButton = $("#moreButton"),
+					dieIfEmpty = false;
 					
 				// this is either get-similar-results or get-recommendations
 				params[pivot] = resultId;
@@ -968,6 +969,8 @@
 					//extra params
 					params.popularity = resultPopularity;
 				}
+				
+				if (cuisine == null) dieIfEmpty = true;
 				
 				if (cuisineMatch && cuisine && cuisine != "") params["tags"] = $.trim(cuisine.replace(/[^a-z]/ig,' ').replace(/\s+/g,' '));
 				
@@ -1024,7 +1027,7 @@
 							moreButton.hide();
 							alert("sorry, no more results");
 						}
-						else if (cuisine) {
+						else if (cuisine && !dieIfEmpty) {
 							alert("sorry, no matches for "+cuisine+" food... showing results for all cuisines.");
 							var cuisineHolder = cuisine;
 							cuisine = null;
