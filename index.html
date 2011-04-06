@@ -966,6 +966,8 @@
 					center = new google.maps.LatLng(urlParams.centerLat, urlParams.centerLng);
 					cuisine = (urlParams.cuisine == "undefined" ? null : urlParams.cuisine);
 					
+					
+					stateFromPerm = true;
 					$("#restaurant, #location").focus();
 					$("#restaurant").val(resultName);
 					$("#location").val(location);
@@ -1156,6 +1158,7 @@
 			maxLat = 0,
 			maxLng = 0,
 			resultName,
+			stateFromPerm = false,
 			resultId,
 			cuisine,
 			viewport,
@@ -1421,8 +1424,10 @@
 				$("#permalinkBox").toggle();
 				$("#permalinkInput").select();
 			});
+
+			stateFromPermalink();
 			
-			if ((window.location.href.indexOf("file://") == -1) && geo_position_js.init()){
+			if ((window.location.href.indexOf("file://") == -1) && stateFromPerm == false && geo_position_js.init()){
 				geo_position_js.getCurrentPosition(function (position) {
 					//console.log(position.coords.latitude, position.coords.longitude);
 					if (geocoder) {
@@ -1455,8 +1460,6 @@
 				});
 			}
 			
-			stateFromPermalink();
-
 		});
 	</script>
 	<script type="text/javascript">
