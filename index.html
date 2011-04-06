@@ -640,6 +640,56 @@
 				padding: 10px;
 				width: 100%;
 			}
+			
+			#permalinkBox, #permalinkButton {
+				display: none;
+			}
+		}
+		
+		#mainContent {
+			position: relative;
+		}
+		
+		#permalinkButton {
+			display: none;
+			cursor: pointer;
+			z-index: 100;
+			position: absolute;
+			height: 16px;
+			right: 0px;
+			top: -19px;
+			font-size: 12px;
+			padding-left: 20px;
+			padding-top: 4px;
+			background-image: url(share_link.png);
+			background-repeat: no-repeat;
+			background-position: left center;
+			font-weight: bolder;
+			opacity: 0.3;
+		}
+		
+		#permalinkButton:hover {
+			opacity: 1.0;
+		}
+		
+		#permalinkBox {
+			display: none;
+			z-index: 100;
+			position: absolute;
+			top: 5px;
+			right: 0px;
+			background-color: #eef;
+			border: 1px solid #ccd;
+			padding: 10px;
+		}
+		
+		#permalinkBox label {
+			display: block;
+			font-size: 12px;
+		}
+		
+		#permalinkInput {
+			width: 200px;
 		}
 		
 		#social {
@@ -683,6 +733,18 @@
 		function isiPad() {
 			return (navigator.platform.indexOf("iPad") != -1);
 		}
+		
+		var urlParams = {};
+		(function () {
+		    var e,
+		        a = /\+/g,
+		        r = /([^&=]+)=?([^&]*)/g,
+		        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+		        q = window.location.search.substring(1);
+
+		    while (e = r.exec(q))
+		       urlParams[d(e[1])] = d(e[2]);
+		})();
 
 		(function () {
 			window.alert = function (text) {
@@ -782,6 +844,7 @@
 					tags = $("<ul class='tags'/>"),
 					anchor = $("<a name='"+item.result_id+"'/>"),
 					showOnMap = $("<a href='#mapView' class='showOnMap'>click here to view on map</a>"),
+					//foursquare = $('<iframe src="http://foursquare.com/button.html?vid='+foursquareId+'&color=light" allowtransparency="true" frameborder="0" scrolling="no" style="width:165px; height:25px;"></iframe>'),
 					interval;
 					
 				showOnMap.click(function () {
@@ -875,6 +938,40 @@
 				});
 				return "rgb("+(parseInt(r/total*255))+","+(parseInt(g/total*255))+","+(parseInt(b/total*255))+")";
 			},
+			permalink = function () {
+				return "http://www.metarade.com/restaurantology/?"+$.param({
+					location: location,
+					minLat: minLat,
+					maxLat: maxLat,
+					minLng: minLng,
+					maxLng: maxLng,
+					cuisine: cuisine,
+					resultId: resultId,
+					resultName: resultName,
+					centerLat: center.lat(),
+					centerLng: center.lng()
+				});
+			},
+			stateFromPermalink = function () {
+				if (urlParams.resultId && urlParams.resultName && urlParams.maxLat && 
+					urlParams.maxLng && urlParams.minLat && urlParams.minLng && urlParams.centerLat &&
+					urlParams.centerLng && urlParams.location) {
+					resultId = urlParams.resultId;
+					resultName = urlParams.resultName;
+					location = urlParams.location;
+					maxLat = urlParams.maxLat;
+					minLat = urlParams.minLat;
+					minLng = urlParams.minLng;
+					maxLng = urlParams.maxLng;
+					center = new google.maps.LatLng(urlParams.centerLat, urlParams.centerLng);
+					cuisine = (urlParams.cuisine == "undefined" ? null : urlParams.cuisine);
+					
+					$("#restaurant, #location").focus();
+					$("#restaurant").val(resultName);
+					$("#location").val(location);
+					$("#lookup").click();
+				}
+			},
 			trySelectRestaurant = function (callback) {
 				var input = $("#restaurant"),
 					overlay = $("#overlayBox"),
@@ -883,6 +980,7 @@
 					select = function (e) {
 						e.preventDefault();
 						var item = $(this);
+						resultName = item.data("name");
 						resultId = item.data("resultId");
 						cuisine = item.data("cuisine");
 						$("#restaurant").val(item.data("name"));
@@ -961,7 +1059,10 @@
 					},
 					moreButton = $("#moreButton"),
 					dieIfEmpty = false;
-					
+				
+				// set permalink
+				$("#permalinkInput").val(permalink());
+				
 				// this is either get-similar-results or get-recommendations
 				params[pivot] = resultId;
 				
@@ -1054,6 +1155,7 @@
 			minLng = 0,
 			maxLat = 0,
 			maxLng = 0,
+			resultName,
 			resultId,
 			cuisine,
 			viewport,
@@ -1189,6 +1291,7 @@
 				select: function (event, ui) {
 					// fires after the change event
 					resultId = ui.item.resultId;
+					resultName = ui.item.label;
 					if (ui.item.cuisines) cuisine = ui.item.cuisines[0];
 					enable();
 				},
@@ -1267,6 +1370,7 @@
 						});
 						google.maps.event.addListenerOnce(map, 'tilesloaded', function () {
 							$("#resultsListContainer").show();
+							$("#permalinkButton").fadeIn();
 							$("#reloadButton").fadeIn();
 							pingHunch();
 						});
@@ -1304,6 +1408,20 @@
 				else lookup();
 			});
 			
+			$("#permalinkBox").click(function () {
+				$("#permalinkButton").click();
+			});
+			
+			$("#permalinkInput").click(function (e) {
+				$(this).select();
+				return false;
+			});
+			
+			$("#permalinkButton").click(function () {
+				$("#permalinkBox").toggle();
+				$("#permalinkInput").select();
+			});
+			
 			if ((window.location.href.indexOf("file://") == -1) && geo_position_js.init()){
 				geo_position_js.getCurrentPosition(function (position) {
 					//console.log(position.coords.latitude, position.coords.longitude);
@@ -1336,6 +1454,8 @@
 					"boo";
 				});
 			}
+			
+			stateFromPermalink();
 
 		});
 	</script>
@@ -1415,16 +1535,23 @@
 					</div>
 				</div>
 			</div>
-			<div id="mapContainer">
-               	<div id="mapCanvas" style="display:none;width:400px;height:400px;"></div>
-                <div id="mapCanvasMobile" style="width:300px;height:300px;"></div>
-				<div id="reloadButton" class='button'>Reload</div>
+			<div id="mainContent">
+				<div id="permalinkButton">Link</div>
+				<div id="permalinkBox">
+					<label for="permalinkInput">Paste link in <strong>email</strong> or <strong>IM</strong></label>
+					<input type="text" id="permalinkInput" />
+				</div>
+				<div id="mapContainer">
+	               	<div id="mapCanvas" style="display:none;width:400px;height:400px;"></div>
+	                <div id="mapCanvasMobile" style="width:300px;height:300px;"></div>
+					<div id="reloadButton" class='button'>Reload</div>
+				</div>
+				<div id="resultsListContainer">
+					<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
+					<ul id="resultsList"></ul>
+					<div id="moreButton">Load More Results</div>
+				</div>
 			</div>
-			<div id="resultsListContainer">
-				<div id="loadingResults">loading from the <span class='hunch'>Hunch</span> API</div>
-				<ul id="resultsList"></ul>
-				<div id="moreButton">Load More Results</div>
-			</ul>
 		</div>
 		<!--
 		<div data-role="footer">
