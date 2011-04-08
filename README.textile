@@ -1,0 +1,22 @@
+h1. What is Restaurantology?
+
+restaurantology is a little toy i threw together to play with the hunch.com api. the general idea is that, instead of getting restaurant recommendations by cuisine or rating, you just try to look for a restaurant that is similar to one that you know you already like. as far as i can tell, it works pretty well. credit goes to harold cooper and the rest of the devs over at hunch.
+
+h1. Can I mess with the code?
+
+yes, i very much welcome people to fork the shit out of me and play with the code. it's just one file, nothing special. all the functionality is javascript, not too much to deal with, relatively modular.
+
+h1. Dependencies?
+
+...because i host the site on my toy server, i have some shared dependencies in the parent folder (you'll have to look in the code to see what the parent folders are called. i know this isn't really convenient for everyone else, i sorry):
+
+* jquery 1.5.1
+* jquery ui 1.8.11
+* geo-autocomplete
+
+included in the repo are the following dependancies:
+
+* jquery lightbox 0.5
+* jquery-location-javascript
+
+and also, i use the google maps api
